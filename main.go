@@ -23,7 +23,7 @@ func Run(args []string) {
 	fmt.Println("Running cli with", args)
 	app := cli.NewApp()
 	app.Name = "sched-load"
-	app.Usage = "define a schedule for uploading a file to public IaaS"
+	app.Usage = "uploads files to public IaaS & publishes a schedule for regular file uploads"
 
 	app.Action = func(c *cli.Context) error {
 		actionName := "help"
