@@ -10,6 +10,7 @@ install:
   - go get -d -v ./...
 
 script:
+  - go test -v ./...
   - "[ `gofmt -l *.go | wc -l` = 0 ]"
 
 after_success:
