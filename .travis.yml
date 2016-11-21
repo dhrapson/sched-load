@@ -13,7 +13,7 @@ script:
   - "[ `gofmt -l *.go | wc -l` = 0 ]"
 
 after_success:
-    - |-
+  - |-
     [ "${TRAVIS_TAG}" != "" ] && [ "${TRAVIS_GO_VERSION}" == "1.7" ] && gox -ldflags "-X github.com/dhrapson/sched-load/cmd.Version=`git describe --tags` -X github.com/dhrapson/sched-load/cmd.BuildTime=`TZ=UTC date -u '+%Y-%m-%dT%H:%M:%SZ'` -X github.com/dhrapson/sched-load/cmd.GitHash=`git rev-parse HEAD`" -output "dist/{{.Dir}}-{{.OS}}-{{.Arch}}"
 
 deploy:
