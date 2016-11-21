@@ -6,7 +6,7 @@ notifications:
       - lists@dhrapson.com
 
 install:
-  - github.com/mitchellh/gox
+  - go get github.com/mitchellh/gox
   - go get -d -v ./...
 
 script:
