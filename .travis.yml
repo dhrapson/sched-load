@@ -1,28 +1,19 @@
 language: go
 go:
   - tip
+  
 notifications:
   email:
     recipients:
-      - dave@dhrapson.com
-before_install:
-  - bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-  - source $HOME/.gvm/scripts/gvm
-  - chmod +x build_release.sh
-  - gvm install go1.4
-  - gvm use go1.4
-  - export GOPATH=$HOME/gopath
+      - lists@dhrapson.com
+
 env:
-  # "gvm update" resets GOOS and GOARCH environment variable, workaround it by setting
-  # BUILD_GOOS and BUILD_GOARCH and overriding GOARCH and GOOS in the build script
-  global:
-    - BUILD_GOARCH=amd64
-  matrix:
-    - BUILD_GOOS=linux
-    - BUILD_GOOS=darwin
-    - BUILD_GOOS=windows
+  - GIMME_OS=linux GIMME_ARCH=amd64
+  - GIMME_OS=darwin GIMME_ARCH=amd64
+  - GIMME_OS=windows GIMME_ARCH=amd64
+
+install:
+  - go get -d -v ./...
+
 script:
-  - gvm cross $BUILD_GOOS $BUILD_GOARCH
-  - GOARCH=$BUILD_GOARCH GOOS=$BUILD_GOOS ./build_release.sh
-  # only test on linux
-  - if [ $BUILD_GOOS == "linux" ]; then GOARCH=$BUILD_GOARCH GOOS=$BUILD_GOOS go test -v ./...; fi
+  - go build -v ./...
