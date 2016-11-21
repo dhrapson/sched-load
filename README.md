@@ -14,7 +14,12 @@ and has the ability to upload files to S3 (first release) & to upload a schedule
 the schedule on which the object store owner should expect files.
 
 ## To build
-```go get github.com/dhrapson/sched-load```
+Fetch & build from github.com
+`go get github.com/dhrapson/sched-load`
+
+OR if changing locally
+`go install
+sched-load status`
 
 ## To run
 Run `sched-load help` for running instructions
