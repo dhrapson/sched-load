@@ -1,5 +1,7 @@
 # sched-load
 
+![Build Status](https://travis-ci.org/dhrapson/sched-load.svg)
+
 This repo contains a utility for managing scheduled uploads to IaaS object stores.
 The challenge being:
 * the source systems vary in operating system & bit architecture
@@ -12,6 +14,8 @@ The challenge being:
 To address these challenges, the source code contained within is written in Go Lang,
 and has the ability to upload files to S3 (first release) & to upload a schedule file indicating
 the schedule on which the object store owner should expect files.
+
+The project is building in [TravisCI](https://travis-ci.org/dhrapson/sched-load)
 
 ## To build
 Fetch & build from github.com
