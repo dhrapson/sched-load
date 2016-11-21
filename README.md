@@ -18,8 +18,8 @@ Fetch & build from github.com
 `go get github.com/dhrapson/sched-load`
 
 OR if changing locally
-`go install
-sched-load status`
+```go install
+sched-load status```
 
 ## To run
 Run `sched-load help` for running instructions
