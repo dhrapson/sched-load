@@ -59,14 +59,15 @@ var _ = Describe("SchedLoad", func() {
 
 	Describe("invoking incorrectly", func() {
 
-		JustBeforeEach(func() {
-			command := exec.Command(cliPath, args...)
-			session, err = Start(command, GinkgoWriter, GinkgoWriter)
-			Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
-			Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
-		})
-
 		Context("When run with an invalid argument", func() {
+
+			JustBeforeEach(func() {
+				command := exec.Command(cliPath, args...)
+				session, err = Start(command, GinkgoWriter, GinkgoWriter)
+				Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
+				Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
+			})
+
 			BeforeEach(func() {
 				args = []string{"foo"}
 			})
@@ -76,5 +77,21 @@ var _ = Describe("SchedLoad", func() {
 			})
 
 		})
+
+		Context("When run with no arguments", func() {
+
+			JustBeforeEach(func() {
+				command := exec.Command(cliPath)
+				session, err = Start(command, GinkgoWriter, GinkgoWriter)
+				Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
+				Eventually(session).Should(Exit(0), cliPath+" exited with unexpected error code")
+			})
+
+			It("exits with non-zero error code", func() {
+				Ω(session.Out).Should(Say("NAME:"))
+			})
+		})
+
 	})
+
 })
