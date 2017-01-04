@@ -31,7 +31,7 @@ var _ = Describe("SchedLoad", func() {
 		cliPath, err = Build("github.com/dhrapson/sched-load")
 		Ω(err).ShouldNot(HaveOccurred(), "Error building source")
 
-		SetDefaultEventuallyTimeout(5 * time.Second)
+		SetDefaultEventuallyTimeout(30 * time.Second)
 	})
 
 	AfterSuite(func() {
