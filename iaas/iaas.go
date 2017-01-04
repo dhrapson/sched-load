@@ -20,7 +20,7 @@ func (client IaaSClient) ListFiles() (names []string, err error) {
 
 	session, err := client.connect()
 	if err != nil {
-		log.Println("Failed to connect", err)
+		log.Println("Failed to connect:", err)
 		return
 	}
 
@@ -51,12 +51,12 @@ func (client IaaSClient) connect() (sess *session.Session, err error) {
 	})
 
 	if err != nil {
-		log.Println("Failed to connect", err)
+		log.Println("Failed to connect:", err)
 	}
 
 	_, err = sess.Config.Credentials.Get()
 	if err != nil {
-		log.Println("Credentials not set", err)
+		log.Println("Credentials not set:", err)
 	}
 
 	return
