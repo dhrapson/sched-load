@@ -3,6 +3,7 @@ package main_test
 import (
 	"os"
 	"os/exec"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -29,6 +30,8 @@ var _ = Describe("SchedLoad", func() {
 		Ω(secretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
 		cliPath, err = Build("github.com/dhrapson/sched-load")
 		Ω(err).ShouldNot(HaveOccurred(), "Error building source")
+
+		SetDefaultEventuallyTimeout(5 * time.Second)
 	})
 
 	AfterSuite(func() {
