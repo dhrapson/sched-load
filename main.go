@@ -8,16 +8,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-func isValidActionCommand(actionCommand string) bool {
-	actions := []string{"status", "help", "create"}
-	for _, action := range actions {
-		if action == actionCommand {
-			return true
-		}
-	}
-	return false
-}
-
 func main() {
 	app := cli.NewApp()
 
