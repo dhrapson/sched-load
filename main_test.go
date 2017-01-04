@@ -76,15 +76,13 @@ var _ = Describe("SchedLoad", func() {
 	})
 
 	Describe("invoking incorrectly", func() {
+		JustBeforeEach(func() {
+			command := exec.Command(cliPath, args...)
+			session, err = Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
+		})
 
 		Context("When run using commands", func() {
-
-			JustBeforeEach(func() {
-				command := exec.Command(cliPath, args...)
-				session, err = Start(command, GinkgoWriter, GinkgoWriter)
-				Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
-				Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
-			})
 
 			Context("When run with an invalid command", func() {
 
@@ -93,6 +91,7 @@ var _ = Describe("SchedLoad", func() {
 				})
 
 				It("exits with non-zero error code", func() {
+					Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
 					Ω(session.Err).Should(Say("Invalid"))
 				})
 			})
@@ -104,6 +103,7 @@ var _ = Describe("SchedLoad", func() {
 				})
 
 				It("exits with non-zero error code", func() {
+					Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
 					Ω(session.Err).Should(Say("Credentials not set"))
 				})
 
@@ -112,14 +112,11 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with no arguments", func() {
 
-			JustBeforeEach(func() {
+			It("exits with non-zero error code", func() {
 				command := exec.Command(cliPath)
 				session, err = Start(command, GinkgoWriter, GinkgoWriter)
 				Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
 				Eventually(session).Should(Exit(0), cliPath+" exited with unexpected error code")
-			})
-
-			It("exits with non-zero error code", func() {
 				Ω(session.Out).Should(Say("NAME:"))
 			})
 		})
