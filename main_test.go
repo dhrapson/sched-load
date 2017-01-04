@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"os"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -12,13 +13,20 @@ import (
 var _ = Describe("SchedLoad", func() {
 
 	var (
-		cliPath string
-		session *Session
-		err     error
-		args    []string
+		cliPath         string
+		session         *Session
+		err             error
+		args            []string
+		accessKeyId     string
+		secretAccessKey string
 	)
 
 	BeforeSuite(func() {
+
+		accessKeyId = os.Getenv("TEST_AWS_ACCESS_KEY_ID")
+		secretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
+		Ω(accessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
+		Ω(secretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
 		cliPath, err = Build("github.com/dhrapson/sched-load")
 		Ω(err).ShouldNot(HaveOccurred(), "Error building source")
 	})
@@ -29,6 +37,16 @@ var _ = Describe("SchedLoad", func() {
 
 	Describe("invoking correctly", func() {
 
+		BeforeEach(func() {
+			os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
+			os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
+		})
+
+		AfterEach(func() {
+			os.Unsetenv("AWS_ACCESS_KEY_ID")
+			os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+		})
+
 		JustBeforeEach(func() {
 			command := exec.Command(cliPath, args...)
 			session, err = Start(command, GinkgoWriter, GinkgoWriter)
@@ -38,11 +56,11 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with status argument", func() {
 			BeforeEach(func() {
-				args = []string{"status"}
+				args = []string{"--region", "eu-west-1", "--integrator", "test-integrator", "--client", "test-client", "status"}
 			})
 
 			It("exits nicely", func() {
-				Ω(session.Out).Should(Say("status"))
+				Ω(session.Out).Should(Say(`connected`))
 			})
 		})
 
@@ -59,7 +77,7 @@ var _ = Describe("SchedLoad", func() {
 
 	Describe("invoking incorrectly", func() {
 
-		Context("When run with an invalid argument", func() {
+		Context("When run using commands", func() {
 
 			JustBeforeEach(func() {
 				command := exec.Command(cliPath, args...)
@@ -68,14 +86,28 @@ var _ = Describe("SchedLoad", func() {
 				Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
 			})
 
-			BeforeEach(func() {
-				args = []string{"foo"}
+			Context("When run with an invalid command", func() {
+
+				BeforeEach(func() {
+					args = []string{"foo"}
+				})
+
+				It("exits with non-zero error code", func() {
+					Ω(session.Err).Should(Say("Invalid"))
+				})
 			})
 
-			It("exits with non-zero error code", func() {
-				Ω(session.Err).Should(Say("Invalid"))
-			})
+			Context("When run without AWS creds", func() {
 
+				BeforeEach(func() {
+					args = []string{"status"}
+				})
+
+				It("exits with non-zero error code", func() {
+					Ω(session.Err).Should(Say("Credentials not set"))
+				})
+
+			})
 		})
 
 		Context("When run with no arguments", func() {

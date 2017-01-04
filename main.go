@@ -5,14 +5,37 @@ import (
 	"log"
 	"os"
 
+	"github.com/dhrapson/sched-load/iaas"
 	"github.com/urfave/cli"
 )
 
 func main() {
 	app := cli.NewApp()
 
+	var region string
+	var integratorId string
+	var clientId string
+
 	app.Name = "sched-load"
 	app.Usage = "uploads files to public IaaS & publishes a schedule for regular file uploads"
+
+	flags := []cli.Flag{
+		cli.StringFlag{
+			Name:        "region",
+			Usage:       "public IaaS region for storing the files",
+			Destination: &region,
+		},
+		cli.StringFlag{
+			Name:        "integrator",
+			Usage:       "identifier for the integrator",
+			Destination: &integratorId,
+		},
+		cli.StringFlag{
+			Name:        "client",
+			Usage:       "identifier for the client",
+			Destination: &clientId,
+		},
+	}
 
 	app.Commands = []cli.Command{
 		{
@@ -20,11 +43,19 @@ func main() {
 			Aliases: []string{"s"},
 			Usage:   "show status of connection and schedule",
 			Action: func(c *cli.Context) error {
-				fmt.Println("status")
+
+				iaasClient := iaas.IaaSClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+				_, err := iaasClient.ListFiles()
+				if err != nil {
+					log.Fatalf("error: %v", err)
+				}
+				fmt.Println("connected")
 				return nil
 			},
 		},
 	}
+
+	app.Flags = flags
 
 	app.CommandNotFound = func(c *cli.Context, command string) {
 		log.Printf("Invalid command '%s'\n\n", command)
