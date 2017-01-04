@@ -15,7 +15,7 @@ To address these challenges, the source code contained within is written in Go L
 and has the ability to upload files to S3 (first release) & to upload a schedule file indicating
 the schedule on which the object store owner should expect files.
 
-The project is building in [TravisCI](https://travis-ci.org/dhrapson/sched-load)
+The project is building in [TravisCI](https://travis-ci.org/dhrapson/sched-load) and is managed via a public [Tracker](https://www.pivotaltracker.com/n/projects/1941641) board
 
 ## To build
 Fetch & build from github.com
