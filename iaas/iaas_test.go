@@ -5,7 +5,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"io/ioutil"
 	"os"
+	"path"
 )
 
 var (
@@ -63,6 +65,48 @@ var _ = Describe("The IaaS Client", func() {
 				It("connects correctly & can see the contents", func() {
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(result).Should(ContainElement("test-folder/"))
+				})
+			})
+
+			Context("with invalid connection details", func() {
+
+				It("throws an error", func() {
+					Ω(err).Should(HaveOccurred())
+				})
+			})
+		})
+
+		Describe("uploading files", func() {
+			var (
+				uploadedFile string
+				tempDir      string
+			)
+
+			JustBeforeEach(func() {
+				uploadedFile, err = client.UploadFile("fixtures/test-file.csv")
+			})
+
+			Context("connecting with valid connection details", func() {
+				BeforeEach(func() {
+					setEnv()
+					tempDir, err = ioutil.TempDir("", "iaas-uploading-files")
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					unsetEnv()
+				})
+
+				It("connects correctly & uploads the file", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(uploadedFile).Should(Equal("test-file.csv"))
+					_, err := client.GetFile(uploadedFile, tempDir)
+					Ω(err).ShouldNot(HaveOccurred())
+					contents, err := ioutil.ReadFile(path.Join(tempDir, "test-file.csv"))
+					Ω(err).ShouldNot(HaveOccurred())
+					expectedContents, err := ioutil.ReadFile("fixtures/test-file.csv")
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(contents).Should(Equal(expectedContents))
 				})
 			})
 
