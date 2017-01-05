@@ -15,6 +15,17 @@ var (
 	region          string
 )
 
+func setEnv() {
+	os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
+	region = "eu-west-1"
+}
+
+func unsetEnv() {
+	os.Unsetenv("AWS_ACCESS_KEY_ID")
+	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+}
+
 var _ = Describe("The IaaS Client", func() {
 
 	BeforeSuite(func() {
@@ -28,39 +39,38 @@ var _ = Describe("The IaaS Client", func() {
 		client = IaaSClient{IntegratorId: "test-integrator", ClientId: "test-client", Region: region}
 	})
 
-	Describe("Connecting", func() {
+	Describe("Interacting with AWS", func() {
 
 		var (
 			result []string
 			err    error
 		)
 
-		JustBeforeEach(func() {
-			result, err = client.ListFiles()
-		})
-
-		Context("with valid connection details", func() {
-			BeforeEach(func() {
-				os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
-				os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
-				region = "eu-west-1"
+		Describe("Connecting and listing files", func() {
+			JustBeforeEach(func() {
+				result, err = client.ListFiles()
 			})
 
-			AfterEach(func() {
-				os.Unsetenv("AWS_ACCESS_KEY_ID")
-				os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+			Context("connecting with valid connection details", func() {
+				BeforeEach(func() {
+					setEnv()
+				})
+
+				AfterEach(func() {
+					unsetEnv()
+				})
+
+				It("connects correctly & can see the contents", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(ContainElement("test-folder/"))
+				})
 			})
 
-			It("connects correctly & can see the contents", func() {
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(result).Should(ContainElement("test-folder/"))
-			})
-		})
+			Context("with invalid connection details", func() {
 
-		Context("with invalid connection details", func() {
-
-			It("throws an error", func() {
-				Ω(err).Should(HaveOccurred())
+				It("throws an error", func() {
+					Ω(err).Should(HaveOccurred())
+				})
 			})
 		})
 	})
