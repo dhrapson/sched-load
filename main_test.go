@@ -65,7 +65,7 @@ var _ = Describe("SchedLoad", func() {
 			})
 
 			It("exits nicely", func() {
-				Ω(session.Out).Should(Say(`connected`))
+				Ω(session.Err).Should(Say(dateFormatRegex+" connected"))
 			})
 		})
 
@@ -107,7 +107,7 @@ var _ = Describe("SchedLoad", func() {
 
 				It("exits with non-zero error code", func() {
 					Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
-					Ω(session.Err).Should(Say("Invalid"))
+					Ω(session.Err).Should(Say(dateFormatRegex+" Invalid"))
 				})
 			})
 
@@ -119,7 +119,7 @@ var _ = Describe("SchedLoad", func() {
 
 				It("exits with non-zero error code", func() {
 					Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
-					Ω(session.Err).Should(Say("Credentials not set"))
+					Ω(session.Err).Should(Say(dateFormatRegex+" Credentials not set"))
 				})
 
 			})

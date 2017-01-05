@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -50,7 +49,7 @@ func main() {
 				if err != nil {
 					log.Fatalf("error: %v", err)
 				}
-				fmt.Println("connected")
+				log.Println("connected")
 				return nil
 			},
 		},
