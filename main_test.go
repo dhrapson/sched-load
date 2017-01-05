@@ -20,6 +20,7 @@ var _ = Describe("SchedLoad", func() {
 		args            []string
 		accessKeyId     string
 		secretAccessKey string
+		dateFormatRegex string
 	)
 
 	BeforeSuite(func() {
@@ -32,6 +33,7 @@ var _ = Describe("SchedLoad", func() {
 		Ω(err).ShouldNot(HaveOccurred(), "Error building source")
 
 		SetDefaultEventuallyTimeout(30 * time.Second)
+		dateFormatRegex = "[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
 	})
 
 	AfterSuite(func() {
@@ -64,6 +66,16 @@ var _ = Describe("SchedLoad", func() {
 
 			It("exits nicely", func() {
 				Ω(session.Out).Should(Say(`connected`))
+			})
+		})
+
+		Context("When run with upload argument", func() {
+			BeforeEach(func() {
+				args = []string{"--region", "eu-west-1", "--integrator", "test-integrator", "--client", "test-client", "upload", "-f", "iaas/fixtures/test-file.csv"}
+			})
+
+			It("exits nicely", func() {
+				Ω(session.Err).Should(Say(dateFormatRegex+" uploaded test-file.csv"))
 			})
 		})
 
