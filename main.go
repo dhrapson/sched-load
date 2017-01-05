@@ -57,26 +57,27 @@ func main() {
 			Name:    "upload",
 			Aliases: []string{"u"},
 			Usage:   "upload a data file",
-			 Flags: []cli.Flag{
-      	cli.StringFlag{
-      		Name: "file, f",
-      		Usage:       "identifier for the client",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "file, f",
+					Usage:       "identifier for the client",
 					Destination: &filePath,
-      	},
-
-      },
+				},
+			},
 			Action: func(c *cli.Context) error {
 
 				iaasClient := iaas.IaaSClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
-				fileName, err := iaasClient.UploadFile(filePath); if err != nil {
+				fileName, err := iaasClient.UploadFile(filePath)
+				if err != nil {
 					log.Fatalf("error: %v", err)
 				}
 
-				fileNames, err := iaasClient.ListFiles(); if err != nil {
+				fileNames, err := iaasClient.ListFiles()
+				if err != nil {
 					log.Fatalf("error: %v", err)
 				}
 
-				if (arrayContains(fileNames, fileName)) {
+				if arrayContains(fileNames, fileName) {
 					log.Printf("uploaded %s\n", fileName)
 				} else {
 					log.Fatalf("unable to find uploaded file %s\n", fileName)

@@ -65,7 +65,7 @@ var _ = Describe("SchedLoad", func() {
 			})
 
 			It("exits nicely", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex+" connected"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
 			})
 		})
 
@@ -75,7 +75,7 @@ var _ = Describe("SchedLoad", func() {
 			})
 
 			It("exits nicely", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex+" uploaded test-file.csv"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " uploaded test-file.csv"))
 			})
 		})
 
@@ -107,8 +107,9 @@ var _ = Describe("SchedLoad", func() {
 
 				It("exits with non-zero error code", func() {
 					Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
-					Ω(session.Err).Should(Say(dateFormatRegex+" Invalid"))
+					Ω(session.Err).Should(Say(dateFormatRegex + " Invalid"))
 				})
+
 			})
 
 			Context("When run without AWS creds", func() {
@@ -119,7 +120,7 @@ var _ = Describe("SchedLoad", func() {
 
 				It("exits with non-zero error code", func() {
 					Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
-					Ω(session.Err).Should(Say(dateFormatRegex+" Credentials not set"))
+					Ω(session.Err).Should(Say(dateFormatRegex + " Credentials not set"))
 				})
 
 			})
