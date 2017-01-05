@@ -21,17 +21,17 @@ func main() {
 
 	flags := []cli.Flag{
 		cli.StringFlag{
-			Name:        "region",
+			Name:        "region, r",
 			Usage:       "public IaaS region for storing the files",
 			Destination: &region,
 		},
 		cli.StringFlag{
-			Name:        "integrator",
+			Name:        "integrator, i",
 			Usage:       "identifier for the integrator",
 			Destination: &integratorId,
 		},
 		cli.StringFlag{
-			Name:        "client",
+			Name:        "client, c",
 			Usage:       "identifier for the client",
 			Destination: &clientId,
 		},
