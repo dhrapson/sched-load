@@ -23,7 +23,6 @@ func (client IaaSClient) ListFiles() (names []string, err error) {
 
 	session, err := client.connect()
 	if err != nil {
-		log.Println("Failed to connect:", err)
 		return
 	}
 
