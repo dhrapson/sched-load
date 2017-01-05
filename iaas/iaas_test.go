@@ -48,7 +48,7 @@ var _ = Describe("The IaaS Client", func() {
 			err    error
 		)
 
-		Describe("Connecting and listing files", func() {
+		Describe("listing files", func() {
 			JustBeforeEach(func() {
 				result, err = client.ListFiles()
 			})
