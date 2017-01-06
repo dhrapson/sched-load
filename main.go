@@ -62,8 +62,9 @@ func main() {
 			Usage:   "manage data files",
 			Subcommands: []cli.Command{
 				{
-					Name:  "delete",
-					Usage: "remove a remote data file",
+					Name:    "delete",
+					Aliases: []string{"d"},
+					Usage:   "remove a remote data file",
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:        "remote, r",
