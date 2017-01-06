@@ -101,6 +101,47 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
+
+	Describe("the Remove operation", func() {
+		var result bool
+		JustBeforeEach(func() {
+			result, err = controller.RemoveSchedule()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			Context("when the schedule was previously set", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates success in setting schedule", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+
+			Context("when the schedule was NOT previously set", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: false}
+				})
+				It("indicates success in setting schedule", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeFalse())
+				})
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+	})
+
 	Describe("the GetSchedule operation", func() {
 		var result string
 		JustBeforeEach(func() {

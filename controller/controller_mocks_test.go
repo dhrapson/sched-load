@@ -4,6 +4,7 @@ type IaaSClientMock struct {
 	FilesList []string
 	FileName  string
 	FilePath  string
+	Success bool
 	Err       error
 }
 
@@ -26,4 +27,11 @@ func (client IaaSClientMock) GetFile(remotePath string, localDir string) (downlo
 		return "", client.Err
 	}
 	return client.FilePath, nil
+}
+
+func (client IaaSClientMock) DeleteFile(remotePath string) (result bool, err error) {
+	if client.Err != nil {
+		return false, client.Err
+	}
+	return client.Success, nil
 }
