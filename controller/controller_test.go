@@ -35,6 +35,7 @@ var _ = Describe("The controller", func() {
 				Ω(status).Should(Equal("connected"))
 			})
 		})
+
 		Context("when the IaaS is not connecting", func() {
 			BeforeEach(func() {
 				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
@@ -45,5 +46,31 @@ var _ = Describe("The controller", func() {
 			})
 		})
 	})
-})
 
+	Describe("the Upload operation", func() {
+		var result string
+		JustBeforeEach(func() {
+			result, err = controller.UploadFile("path/to/thefile")
+		})
+
+		Context("when the IaaS is connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{FilesList: []string{"somefile", "thefile", "otherfile"}, FileName: "thefile"}
+			})
+			It("gives uploaded result", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result).Should(Equal("thefile"))
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(Equal("error"))
+			})
+		})
+	})
+})
