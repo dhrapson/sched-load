@@ -73,4 +73,31 @@ var _ = Describe("The controller", func() {
 			})
 		})
 	})
+
+	Describe("the SetSchedule operation", func() {
+		var result bool
+		JustBeforeEach(func() {
+			result, err = controller.SetSchedule("DAILY")
+		})
+
+		Context("when the IaaS is connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{FileName: "DAILY_SCHEDULE"}
+			})
+			It("gives set", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result).Should(BeTrue())
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+	})
 })

@@ -3,6 +3,8 @@ package controller
 import (
 	"errors"
 	"github.com/dhrapson/sched-load/iaas"
+	"io/ioutil"
+	"os"
 	"path"
 )
 
@@ -37,6 +39,20 @@ func (controller Controller) UploadFile(filePath string) (result string, err err
 	} else {
 		err = errors.New("Unable to find uploaded file" + fileName)
 	}
+	return
+}
+
+func (controller Controller) SetSchedule(interval string) (result bool, err error) {
+	result = false
+	targetFile := interval + "_SCHEDULE"
+	var tempFile *os.File
+	if tempFile, err = ioutil.TempFile("", "set-schedule"); err != nil {
+		return
+	}
+
+	var fileName string
+	fileName, err = controller.Client.UploadFile(tempFile.Name(), targetFile)
+	result = (fileName == targetFile)
 	return
 }
 
