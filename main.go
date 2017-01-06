@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/dhrapson/sched-load/controller"
 	"github.com/dhrapson/sched-load/iaas"
@@ -111,10 +110,35 @@ func main() {
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
-						if status, err := controller.SetSchedule("DAILY"); err != nil {
+						if wasPreExisting, err := controller.SetSchedule("DAILY"); err != nil {
 							log.Fatalf("Error connecting: %s\n", err.Error())
 						} else {
-							log.Println("Set daily schedule: " + strconv.FormatBool(status))
+
+							if wasPreExisting {
+								log.Println("Set daily schedule")
+							} else {
+								log.Println("Daily schedule was already set")
+							}
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "none",
+					Usage: "remove schedule",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						if wasPreExisting, err := controller.RemoveSchedule(); err != nil {
+							log.Fatalf("Error connecting: %s\n", err.Error())
+						} else {
+							if wasPreExisting {
+								log.Println("Removed schedule")
+							} else {
+								log.Println("No schedule existed to remove")
+							}
 						}
 						return nil
 					},
