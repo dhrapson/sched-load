@@ -12,9 +12,10 @@ import (
 )
 
 type IaaSClient interface {
+	DeleteFile(remotePath string) (result bool, err error)
+	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
 	ListFiles() (names []string, err error)
 	UploadFile(filepath string, target string) (name string, err error)
-	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
 }
 
 type AwsClient struct {
@@ -50,6 +51,32 @@ func (client AwsClient) ListFiles() (names []string, err error) {
 		objectName := strings.Join(strings.Split(objectPath, "/")[1:], "/")
 		names = append(names, objectName)
 	}
+	return
+}
+
+func (client AwsClient) DeleteFile(remotePath string) (result bool, err error) {
+
+	targetFile := client.ClientId + "/" + remotePath
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := s3.New(session)
+
+	params := &s3.DeleteObjectInput{
+		Bucket: aws.String("/" + client.IntegratorId),
+		Key:    aws.String(targetFile),
+	}
+
+	_, err = svc.DeleteObject(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	result = true
 	return
 }
 

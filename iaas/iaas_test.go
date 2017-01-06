@@ -7,7 +7,6 @@ import (
 
 	"io/ioutil"
 	"os"
-	"path"
 )
 
 var (
@@ -44,47 +43,17 @@ var _ = Describe("The IaaS Client", func() {
 	Describe("Interacting with AWS", func() {
 
 		var (
-			result []string
-			err    error
+			result         []string
+			localFilePath  string
+			remoteFilePath string
+			status         bool
+			err            error
 		)
 
-		Describe("listing files", func() {
-			JustBeforeEach(func() {
-				result, err = client.ListFiles()
-			})
-
-			Context("connecting with valid connection details", func() {
-				BeforeEach(func() {
-					setEnv()
-				})
-
-				AfterEach(func() {
-					unsetEnv()
-				})
-
-				It("connects correctly & can see the contents", func() {
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(result).Should(ContainElement("test-folder/"))
-				})
-			})
-
-			Context("with invalid connection details", func() {
-
-				It("throws an error", func() {
-					Ω(err).Should(HaveOccurred())
-				})
-			})
-		})
-
-		Describe("uploading files", func() {
+		Describe("managing files", func() {
 			var (
-				uploadedFile string
-				tempDir      string
+				tempDir string
 			)
-
-			JustBeforeEach(func() {
-				uploadedFile, err = client.UploadFile("fixtures/test-file.csv", "someother-file.csv")
-			})
 
 			Context("connecting with valid connection details", func() {
 				BeforeEach(func() {
@@ -98,22 +67,84 @@ var _ = Describe("The IaaS Client", func() {
 				})
 
 				It("connects correctly & uploads the file", func() {
+					remoteFilePath, err = client.UploadFile("fixtures/test-file.csv", "someother-file.csv")
 					Ω(err).ShouldNot(HaveOccurred())
-					Ω(uploadedFile).Should(Equal("someother-file.csv"))
-					_, err := client.GetFile(uploadedFile, tempDir)
+					Ω(remoteFilePath).Should(Equal("someother-file.csv"))
+
+				})
+
+				It("finds the file it just uploaded", func() {
+					result, err = client.ListFiles()
 					Ω(err).ShouldNot(HaveOccurred())
-					contents, err := ioutil.ReadFile(path.Join(tempDir, "someother-file.csv"))
+					Ω(result).Should(ContainElement("someother-file.csv"))
+				})
+
+				It("downloads the file and the contents match", func() {
+					localFilePath, err := client.GetFile(remoteFilePath, tempDir)
+					Ω(err).ShouldNot(HaveOccurred())
+					contents, err := ioutil.ReadFile(localFilePath)
 					Ω(err).ShouldNot(HaveOccurred())
 					expectedContents, err := ioutil.ReadFile("fixtures/test-file.csv")
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(contents).Should(Equal(expectedContents))
 				})
+
+				It("deletes the file it just uploaded", func() {
+					status, err = client.DeleteFile("someother-file.csv")
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeTrue())
+				})
+
+				It("can see that the file is gone", func() {
+					result, err = client.ListFiles()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).ShouldNot(ContainElement("someother-file.csv"))
+				})
+
+				It("returns false when deleting a non-existant files", func() {
+					status, err = client.DeleteFile("someother-file.csv")
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeTrue())
+				})
 			})
 
 			Context("with invalid connection details", func() {
 
-				It("throws an error", func() {
-					Ω(err).Should(HaveOccurred())
+				Context("when listing files", func() {
+					BeforeEach(func() {
+						result, err = client.ListFiles()
+					})
+					It("throws an error", func() {
+						Ω(err).Should(HaveOccurred())
+					})
+				})
+
+				Context("when deleting a file", func() {
+					BeforeEach(func() {
+						status, err = client.DeleteFile("doesntmatter")
+					})
+					It("throws an error", func() {
+						Ω(err).Should(HaveOccurred())
+					})
+				})
+
+				Context("when uploading a file", func() {
+					BeforeEach(func() {
+						remoteFilePath, err = client.UploadFile("doesntmatter", "doesntmatter")
+					})
+					It("throws an error", func() {
+						Ω(err).Should(HaveOccurred())
+					})
+				})
+
+				Context("when downloading a file", func() {
+					BeforeEach(func() {
+						tempDir, err = ioutil.TempDir("", "iaas-uploading-files")
+						localFilePath, err = client.GetFile("doesntmatter", tempDir)
+					})
+					It("throws an error", func() {
+						Ω(err).Should(HaveOccurred())
+					})
 				})
 			})
 		})
