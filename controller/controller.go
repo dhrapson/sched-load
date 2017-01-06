@@ -20,10 +20,10 @@ func (controller Controller) Status() (string, error) {
 	return "connected", nil
 }
 
-func (controller Controller) UploadFile(filePath string) (result string, err error) {
+func (controller Controller) UploadDataFile(filePath string) (result string, err error) {
 
 	result = "error"
-	targetFile := path.Base(filePath)
+	targetFile := "INPUT/" + path.Base(filePath)
 	var fileName string
 	if fileName, err = controller.Client.UploadFile(filePath, targetFile); err != nil {
 		return

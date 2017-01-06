@@ -50,7 +50,7 @@ var _ = Describe("The controller", func() {
 	Describe("the Upload operation", func() {
 		var result string
 		JustBeforeEach(func() {
-			result, err = controller.UploadFile("path/to/thefile")
+			result, err = controller.UploadDataFile("path/to/thefile")
 		})
 
 		Context("when the IaaS is connecting", func() {

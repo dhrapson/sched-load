@@ -106,7 +106,7 @@ var _ = Describe("SchedLoad", func() {
 			})
 
 			It("exits nicely", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex + " uploaded test-file.csv"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " uploaded INPUT/test-file.csv"))
 			})
 		})
 

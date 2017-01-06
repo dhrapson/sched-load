@@ -73,7 +73,7 @@ func main() {
 				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 				controller := controller.Controller{Client: iaasClient}
 
-				if fileName, err := controller.UploadFile(filePath); err != nil {
+				if fileName, err := controller.UploadDataFile(filePath); err != nil {
 					log.Fatalf("Error uploading file %s, %s\n", fileName, err.Error())
 				} else {
 					log.Printf("uploaded %s\n", fileName)
