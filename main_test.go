@@ -103,7 +103,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing data files", func() {
 			Context("When uploading", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "upload", "-f", "iaas/fixtures/test-file.csv"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "upload", "-f", "iaas/fixtures/test-file.csv"}
 				})
 
 				It("exits nicely", func() {

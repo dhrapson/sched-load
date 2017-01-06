@@ -89,32 +89,32 @@ func main() {
 
 						return nil
 					},
-				}
-			}
-		},
-		{
-			Name:    "upload",
-			Aliases: []string{"u"},
-			Usage:   "upload a data file",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:        "file, f",
-					Usage:       "path to the file",
-					Destination: &filePath,
 				},
-			},
-			Action: func(c *cli.Context) error {
+				{
+					Name:    "upload",
+					Aliases: []string{"u"},
+					Usage:   "upload a data file",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "file, f",
+							Usage:       "path to the local file",
+							Destination: &filePath,
+						},
+					},
+					Action: func(c *cli.Context) error {
 
-				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
-				controller := controller.Controller{Client: iaasClient}
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
 
-				if fileName, err := controller.UploadDataFile(filePath); err != nil {
-					log.Fatalf("Error uploading file %s, %s\n", fileName, err.Error())
-				} else {
-					log.Printf("uploaded %s\n", fileName)
-				}
+						if fileName, err := controller.UploadDataFile(filePath); err != nil {
+							log.Fatalf("Error uploading file %s, %s\n", fileName, err.Error())
+						} else {
+							log.Printf("uploaded %s\n", fileName)
+						}
 
-				return nil
+						return nil
+					},
+				},
 			},
 		},
 		{
