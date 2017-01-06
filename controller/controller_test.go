@@ -101,7 +101,6 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
-
 	Describe("the Remove operation", func() {
 		var result bool
 		JustBeforeEach(func() {

@@ -4,7 +4,7 @@ type IaaSClientMock struct {
 	FilesList []string
 	FileName  string
 	FilePath  string
-	Success bool
+	Success   bool
 	Err       error
 }
 
