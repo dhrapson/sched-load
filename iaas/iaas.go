@@ -12,7 +12,7 @@ import (
 )
 
 type IaaSClient interface {
-	DeleteFile(remotePath string) (result bool, err error)
+	DeleteFile(remotePath string) (wasPreExisting bool, err error)
 	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
 	ListFiles() (names []string, err error)
 	UploadFile(filepath string, target string) (name string, err error)
@@ -54,9 +54,17 @@ func (client AwsClient) ListFiles() (names []string, err error) {
 	return
 }
 
-func (client AwsClient) DeleteFile(remotePath string) (result bool, err error) {
+func (client AwsClient) DeleteFile(remotePath string) (wasPreExisting bool, err error) {
 
-	targetFile := client.ClientId + "/" + remotePath
+	files, err := client.ListFiles()
+	if err != nil {
+		return
+	}
+	if !arrayContains(files, remotePath) {
+		return
+	}
+
+	wasPreExisting = true
 
 	session, err := client.connect()
 	if err != nil {
@@ -64,6 +72,8 @@ func (client AwsClient) DeleteFile(remotePath string) (result bool, err error) {
 	}
 
 	svc := s3.New(session)
+
+	targetFile := client.ClientId + "/" + remotePath
 
 	params := &s3.DeleteObjectInput{
 		Bucket: aws.String("/" + client.IntegratorId),
@@ -76,7 +86,7 @@ func (client AwsClient) DeleteFile(remotePath string) (result bool, err error) {
 		log.Println(err.Error())
 		return
 	}
-	result = true
+
 	return
 }
 
@@ -178,4 +188,13 @@ func exists(path string) bool {
 	}
 
 	return true
+}
+
+func arrayContains(haystack []string, needle string) bool {
+	for _, hay := range haystack {
+		if needle == hay {
+			return true
+		}
+	}
+	return false
 }

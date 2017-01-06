@@ -104,7 +104,7 @@ var _ = Describe("The IaaS Client", func() {
 				It("returns false when deleting a non-existant files", func() {
 					status, err = client.DeleteFile("someother-file.csv")
 					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeTrue())
+					Ω(status).Should(BeFalse())
 				})
 			})
 
