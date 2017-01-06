@@ -110,6 +110,17 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
+		Context("When run with schedule daily argument", func() {
+			BeforeEach(func() {
+				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "schedule", "daily"}
+			})
+
+			It("exits nicely", func() {
+				Ω(session.Err).Should(Say(dateFormatRegex + " Set daily schedule: true"))
+			})
+		})
+
+
 		Context("When run with help argument", func() {
 			BeforeEach(func() {
 				args = []string{"help"}

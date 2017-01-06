@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/dhrapson/sched-load/controller"
 	"github.com/dhrapson/sched-load/iaas"
@@ -80,6 +81,28 @@ func main() {
 
 				return nil
 			},
+		},
+		{
+			Name:    "schedule",
+			Usage:   "schedule the collection of uploaded data files",
+			Subcommands: []cli.Command{
+        {
+          Name:  "daily",
+          Usage: "set a daily schedule",
+          Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						if status, err := controller.SetSchedule("DAILY"); err != nil {
+							log.Fatalf("Error connecting: %s\n", err.Error())
+						} else {
+							log.Println("Set daily schedule: "+strconv.FormatBool(status))
+						}
+						return nil
+					},
+        },
+      },
 		},
 	}
 
