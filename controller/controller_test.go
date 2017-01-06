@@ -100,4 +100,44 @@ var _ = Describe("The controller", func() {
 			})
 		})
 	})
+
+	Describe("the GetSchedule operation", func() {
+		var result string
+		JustBeforeEach(func() {
+			result, err = controller.GetSchedule()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			Context("when no schedule is set", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{}
+				})
+				It("shows that none is set", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(Equal("NONE"))
+				})
+			})
+
+			Context("when a daily schedule is set", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{FilesList: []string{"INPUT/somefile.txt.", "DAILY_SCHEDULE", "PROCESSED/someotherfile.txt"}}
+				})
+				It("returns a daily status", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(Equal("DAILY"))
+				})
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(Equal("ERROR"))
+			})
+		})
+	})
 })

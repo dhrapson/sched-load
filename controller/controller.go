@@ -58,6 +58,21 @@ func (controller Controller) SetSchedule(interval string) (result bool, err erro
 	return
 }
 
+func (controller Controller) GetSchedule() (result string, err error) {
+	result = "ERROR"
+	fileName := "DAILY_SCHEDULE"
+	var fileNames []string
+	if fileNames, err = controller.Client.ListFiles(); err != nil {
+		return
+	}
+
+	if arrayContains(fileNames, fileName) {
+		result = "DAILY"
+	} else {
+		result = "NONE"
+	}
+	return
+}
 func arrayContains(haystack []string, needle string) bool {
 	for _, hay := range haystack {
 		if needle == hay {
