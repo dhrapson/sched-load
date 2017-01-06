@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/dhrapson/sched-load/iaas"
+	"github.com/dhrapson/sched-load/controller"
 	"github.com/urfave/cli"
 )
 
@@ -45,11 +46,13 @@ func main() {
 			Action: func(c *cli.Context) error {
 
 				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
-				_, err := iaasClient.ListFiles()
-				if err != nil {
-					log.Fatalf("error: %v", err)
+				controller := controller.Controller{Client: iaasClient}
+
+				if status, err := controller.Status(); err != nil {
+					log.Fatalf("Error connecting: %s\n", err.Error())
+				} else {
+					log.Println(status)
 				}
-				log.Println("connected")
 				return nil
 			},
 		},
@@ -67,20 +70,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 
 				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
-				fileName, err := iaasClient.UploadFile(filePath)
-				if err != nil {
-					log.Fatalf("error: %v", err)
-				}
+				controller := controller.Controller{Client: iaasClient}
 
-				fileNames, err := iaasClient.ListFiles()
-				if err != nil {
-					log.Fatalf("error: %v", err)
-				}
-
-				if arrayContains(fileNames, fileName) {
+				if fileName, err := controller.UploadFile(filePath); err != nil {
+					log.Fatalf("Error uploading file %s, %s\n", fileName, err.Error())
+				} else{
 					log.Printf("uploaded %s\n", fileName)
-				} else {
-					log.Fatalf("unable to find uploaded file %s\n", fileName)
 				}
 
 				return nil
@@ -96,13 +91,4 @@ func main() {
 		os.Exit(1)
 	}
 	app.Run(os.Args)
-}
-
-func arrayContains(haystack []string, needle string) bool {
-	for _, hay := range haystack {
-		if needle == hay {
-			return true
-		}
-	}
-	return false
 }

@@ -158,7 +158,7 @@ var _ = Describe("SchedLoad", func() {
 			})
 
 			It("exits with zero error code", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex + " error: RequestError: send request failed"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Error connecting: RequestError: send request failed"))
 			})
 
 		})
