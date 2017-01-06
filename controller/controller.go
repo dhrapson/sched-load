@@ -46,7 +46,9 @@ func (controller Controller) SetSchedule(interval string) (result bool, err erro
 	result = false
 	targetFile := interval + "_SCHEDULE"
 	var tempFile *os.File
-	if tempFile, err = ioutil.TempFile("", "set-schedule"); err != nil {
+	tempFile, err = ioutil.TempFile("", "set-schedule")
+	defer tempFile.Close()
+	if err != nil {
 		return
 	}
 
