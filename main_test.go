@@ -120,7 +120,6 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
-
 		Context("When run with help argument", func() {
 			BeforeEach(func() {
 				args = []string{"help"}
