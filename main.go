@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/dhrapson/sched-load/iaas"
 	"github.com/dhrapson/sched-load/controller"
+	"github.com/dhrapson/sched-load/iaas"
 	"github.com/urfave/cli"
 )
 
@@ -74,7 +74,7 @@ func main() {
 
 				if fileName, err := controller.UploadFile(filePath); err != nil {
 					log.Fatalf("Error uploading file %s, %s\n", fileName, err.Error())
-				} else{
+				} else {
 					log.Printf("uploaded %s\n", fileName)
 				}
 
