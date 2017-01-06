@@ -44,7 +44,7 @@ func main() {
 			Usage:   "show status of connection and schedule",
 			Action: func(c *cli.Context) error {
 
-				iaasClient := iaas.IaaSClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 				_, err := iaasClient.ListFiles()
 				if err != nil {
 					log.Fatalf("error: %v", err)
@@ -66,7 +66,7 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 
-				iaasClient := iaas.IaaSClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 				fileName, err := iaasClient.UploadFile(filePath)
 				if err != nil {
 					log.Fatalf("error: %v", err)

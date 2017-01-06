@@ -11,14 +11,20 @@ import (
 	"strings"
 )
 
-type IaaSClient struct {
+type IaaSClient interface {
+	 ListFiles() (names []string, err error)
+	 UploadFile(filepath string) (name string, err error)
+	 GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
+}
+
+type AwsClient struct {
 	Region       string
 	session      *session.Session
 	IntegratorId string
 	ClientId     string
 }
 
-func (client IaaSClient) ListFiles() (names []string, err error) {
+func (client AwsClient) ListFiles() (names []string, err error) {
 	names = []string{}
 
 	session, err := client.connect()
@@ -47,7 +53,7 @@ func (client IaaSClient) ListFiles() (names []string, err error) {
 	return
 }
 
-func (client IaaSClient) UploadFile(filepath string) (name string, err error) {
+func (client AwsClient) UploadFile(filepath string) (name string, err error) {
 
 	name = path.Base(filepath)
 	targetFile := client.ClientId + "/" + name
@@ -81,7 +87,7 @@ func (client IaaSClient) UploadFile(filepath string) (name string, err error) {
 	return
 }
 
-func (client IaaSClient) GetFile(remotePath string, localDir string) (downloadedFilePath string, err error) {
+func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedFilePath string, err error) {
 
 	name := path.Base(remotePath)
 	downloadedFilePath = path.Join(localDir, name)
@@ -121,7 +127,7 @@ func (client IaaSClient) GetFile(remotePath string, localDir string) (downloaded
 	return
 }
 
-func (client IaaSClient) connect() (sess *session.Session, err error) {
+func (client AwsClient) connect() (sess *session.Session, err error) {
 	sess, err = session.NewSession(&aws.Config{
 		Region: aws.String(client.Region),
 	})
