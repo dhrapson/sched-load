@@ -11,17 +11,29 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("SchedLoad", func() {
+var (
+	cliPath           string
+	session           *Session
+	err               error
+	args              []string
+	accessKeyId       string
+	secretAccessKey   string
+	region            string
+)
 
-	var (
-		cliPath         string
-		session         *Session
-		err             error
-		args            []string
-		accessKeyId     string
-		secretAccessKey string
-		dateFormatRegex string
-	)
+func setEnv() {
+	os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
+	region = "eu-west-1"
+}
+
+func unsetEnv() {
+	os.Unsetenv("AWS_ACCESS_KEY_ID")
+	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+}
+
+
+var _ = Describe("SchedLoad", func() {
 
 	BeforeSuite(func() {
 
@@ -43,13 +55,11 @@ var _ = Describe("SchedLoad", func() {
 	Describe("invoking correctly", func() {
 
 		BeforeEach(func() {
-			os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
-			os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
+			setEnv()
 		})
 
 		AfterEach(func() {
-			os.Unsetenv("AWS_ACCESS_KEY_ID")
-			os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+			unsetEnv()
 		})
 
 		JustBeforeEach(func() {
@@ -61,7 +71,7 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with status argument", func() {
 			BeforeEach(func() {
-				args = []string{"--region", "eu-west-1", "--integrator", "test-integrator", "--client", "test-client", "status"}
+				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "status"}
 			})
 
 			It("exits nicely", func() {
@@ -71,7 +81,7 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with upload argument", func() {
 			BeforeEach(func() {
-				args = []string{"--region", "eu-west-1", "--integrator", "test-integrator", "--client", "test-client", "upload", "-f", "iaas/fixtures/test-file.csv"}
+				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "upload", "-f", "iaas/fixtures/test-file.csv"}
 			})
 
 			It("exits nicely", func() {
