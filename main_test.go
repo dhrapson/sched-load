@@ -110,13 +110,25 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
-		Context("When run with schedule daily argument", func() {
-			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "schedule", "daily"}
+		Context("When managing schedules", func() {
+			Context("When setting daily", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "set-schedule", "daily"}
+				})
+
+				It("indicates success", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Set daily schedule: true"))
+				})
 			})
 
-			It("exits nicely", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex + " Set daily schedule: true"))
+			Context("When showing daily", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "schedule"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " existing schedule: DAILY"))
+				})
 			})
 		})
 

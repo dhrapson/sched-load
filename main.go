@@ -84,7 +84,24 @@ func main() {
 		},
 		{
 			Name:  "schedule",
-			Usage: "schedule the collection of uploaded data files",
+			Usage: "show the schedule for collection of uploaded data files",
+			Action: func(c *cli.Context) error {
+
+				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+				controller := controller.Controller{Client: iaasClient}
+
+				if schedule, err := controller.GetSchedule(); err != nil {
+					log.Fatalf("Error connecting: %s\n", err.Error())
+				} else {
+					log.Println("existing schedule: " + schedule)
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "set-schedule",
+			Aliases: []string{"ss"},
+			Usage: "set a schedule for collection of uploaded data files",
 			Subcommands: []cli.Command{
 				{
 					Name:  "daily",
