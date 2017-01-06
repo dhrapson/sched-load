@@ -57,13 +57,48 @@ func main() {
 			},
 		},
 		{
+			Name:    "data-file",
+			Aliases: []string{"df"},
+			Usage:   "manage data files",
+			Subcommands: []cli.Command{
+				{
+					Name:  "delete",
+					Usage: "remove a remote data file",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "remote, r",
+							Usage:       "remote file path",
+							Destination: &filePath,
+						},
+					},
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						if wasPreExisting, err := controller.DeleteDataFile(filePath); err != nil {
+							log.Fatalf("Error delete file %s, %s\n", fileName, err.Error())
+						} else {
+							if wasPreExisting {
+								log.Printf("deleted %s\n", fileName)
+							} else {
+								log.Printf("%s did not exist\n", fileName)
+							}
+						}
+
+						return nil
+					},
+				}
+			}
+		},
+		{
 			Name:    "upload",
 			Aliases: []string{"u"},
 			Usage:   "upload a data file",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:        "file, f",
-					Usage:       "identifier for the client",
+					Usage:       "path to the file",
 					Destination: &filePath,
 				},
 			},

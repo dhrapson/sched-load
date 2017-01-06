@@ -100,13 +100,35 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
-		Context("When run with upload argument", func() {
-			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "upload", "-f", "iaas/fixtures/test-file.csv"}
+		Context("When managing data files", func() {
+			Context("When uploading", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "upload", "-f", "iaas/fixtures/test-file.csv"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " uploaded INPUT/test-file.csv"))
+				})
 			})
 
-			It("exits nicely", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex + " uploaded INPUT/test-file.csv"))
+			Context("When deleting an existing file", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "data-file", "delete", "-r", "test-file.csv"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " deleted test-file.csv"))
+				})
+			})
+
+			Context("When deleting a non-existant file", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "data-file", "delete", "-r", "test-file.csv"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " test-file.csv did not exist"))
+				})
 			})
 		})
 
