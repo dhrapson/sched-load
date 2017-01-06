@@ -47,7 +47,48 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
-	Describe("the Upload operation", func() {
+	Describe("the DeleteDataFile operation", func() {
+		var result bool
+		JustBeforeEach(func() {
+			result, err = controller.DeleteDataFile("anyfile")
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			Context("when the file was previously existing", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates success in setting schedule", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+
+			Context("when the file was NOT previously existing", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: false}
+				})
+				It("indicates success in setting schedule", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeFalse())
+				})
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+	})
+
+
+	Describe("the UploadDataFile operation", func() {
 		var result string
 		JustBeforeEach(func() {
 			result, err = controller.UploadDataFile("path/to/thefile")

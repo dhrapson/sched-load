@@ -42,6 +42,11 @@ func (controller Controller) UploadDataFile(filePath string) (result string, err
 	return
 }
 
+func (controller Controller) DeleteDataFile(filePath string) (result bool, err error) {
+	targetFile := "INPUT/" + filePath
+	return controller.Client.DeleteFile(targetFile)
+}
+
 func (controller Controller) RemoveSchedule() (previouslySet bool, err error) {
 	return controller.Client.DeleteFile("DAILY_SCHEDULE")
 }
