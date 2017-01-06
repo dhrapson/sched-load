@@ -142,7 +142,7 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
-	Describe("the Remove operation", func() {
+	Describe("the RemoveSchedule operation", func() {
 		var result bool
 		JustBeforeEach(func() {
 			result, err = controller.RemoveSchedule()
