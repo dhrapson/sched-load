@@ -12,9 +12,9 @@ import (
 )
 
 type IaaSClient interface {
-	 ListFiles() (names []string, err error)
-	 UploadFile(filepath string) (name string, err error)
-	 GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
+	ListFiles() (names []string, err error)
+	UploadFile(filepath string) (name string, err error)
+	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
 }
 
 type AwsClient struct {

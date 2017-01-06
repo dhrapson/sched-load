@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/dhrapson/sched-load/iaas"
 )
+
 type Controller struct {
 	Client iaas.IaaSClient
 }

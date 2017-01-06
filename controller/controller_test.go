@@ -1,10 +1,10 @@
 package controller_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	. "github.com/dhrapson/sched-load/controller"
 	"github.com/dhrapson/sched-load/iaas"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"errors"
 )
@@ -12,7 +12,7 @@ import (
 var (
 	controller Controller
 	iaasClient iaas.IaaSClient
-	err error
+	err        error
 )
 var _ = Describe("The controller", func() {
 
@@ -20,11 +20,11 @@ var _ = Describe("The controller", func() {
 		controller = Controller{Client: iaasClient}
 	})
 	Describe("the Status operation", func() {
-			var status string
+		var status string
 
 		JustBeforeEach(func() {
 			status, err = controller.Status()
-		 })
+		})
 
 		Context("when the IaaS is connecting", func() {
 			BeforeEach(func() {

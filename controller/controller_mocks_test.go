@@ -1,10 +1,10 @@
 package controller_test
 
 type IaaSClientMock struct {
-		FilesList []string
-		FileName string
-		FilePath string
-		Err error
+	FilesList []string
+	FileName  string
+	FilePath  string
+	Err       error
 }
 
 func (client IaaSClientMock) ListFiles() (names []string, err error) {
