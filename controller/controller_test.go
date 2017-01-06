@@ -87,7 +87,6 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
-
 	Describe("the UploadDataFile operation", func() {
 		var result string
 		JustBeforeEach(func() {
