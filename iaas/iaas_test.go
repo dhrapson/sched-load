@@ -83,7 +83,7 @@ var _ = Describe("The IaaS Client", func() {
 			)
 
 			JustBeforeEach(func() {
-				uploadedFile, err = client.UploadFile("fixtures/test-file.csv")
+				uploadedFile, err = client.UploadFile("fixtures/test-file.csv", "someother-file.csv")
 			})
 
 			Context("connecting with valid connection details", func() {
@@ -99,10 +99,10 @@ var _ = Describe("The IaaS Client", func() {
 
 				It("connects correctly & uploads the file", func() {
 					Ω(err).ShouldNot(HaveOccurred())
-					Ω(uploadedFile).Should(Equal("test-file.csv"))
+					Ω(uploadedFile).Should(Equal("someother-file.csv"))
 					_, err := client.GetFile(uploadedFile, tempDir)
 					Ω(err).ShouldNot(HaveOccurred())
-					contents, err := ioutil.ReadFile(path.Join(tempDir, "test-file.csv"))
+					contents, err := ioutil.ReadFile(path.Join(tempDir, "someother-file.csv"))
 					Ω(err).ShouldNot(HaveOccurred())
 					expectedContents, err := ioutil.ReadFile("fixtures/test-file.csv")
 					Ω(err).ShouldNot(HaveOccurred())

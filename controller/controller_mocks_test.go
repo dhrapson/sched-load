@@ -14,7 +14,7 @@ func (client IaaSClientMock) ListFiles() (names []string, err error) {
 	return client.FilesList, nil
 }
 
-func (client IaaSClientMock) UploadFile(filepath string) (name string, err error) {
+func (client IaaSClientMock) UploadFile(filepath string, targetName string) (name string, err error) {
 	if client.Err != nil {
 		return "", client.Err
 	}

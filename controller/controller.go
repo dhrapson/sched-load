@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"github.com/dhrapson/sched-load/iaas"
+	"path"
 )
 
 type Controller struct {
@@ -18,9 +19,11 @@ func (controller Controller) Status() (string, error) {
 }
 
 func (controller Controller) UploadFile(filePath string) (result string, err error) {
+
 	result = "error"
+	targetFile := path.Base(filePath)
 	var fileName string
-	if fileName, err = controller.Client.UploadFile(filePath); err != nil {
+	if fileName, err = controller.Client.UploadFile(filePath, targetFile); err != nil {
 		return
 	}
 

@@ -13,7 +13,7 @@ import (
 
 type IaaSClient interface {
 	ListFiles() (names []string, err error)
-	UploadFile(filepath string) (name string, err error)
+	UploadFile(filepath string, target string) (name string, err error)
 	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
 }
 
@@ -53,10 +53,9 @@ func (client AwsClient) ListFiles() (names []string, err error) {
 	return
 }
 
-func (client AwsClient) UploadFile(filepath string) (name string, err error) {
+func (client AwsClient) UploadFile(filepath string, targetName string) (name string, err error) {
 
-	name = path.Base(filepath)
-	targetFile := client.ClientId + "/" + name
+	targetFile := client.ClientId + "/" + targetName
 
 	session, err := client.connect()
 	if err != nil {
@@ -83,7 +82,7 @@ func (client AwsClient) UploadFile(filepath string) (name string, err error) {
 		log.Println(err.Error())
 		return
 	}
-
+	name = targetName
 	return
 }
 
