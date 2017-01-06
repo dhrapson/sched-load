@@ -76,14 +76,14 @@ func main() {
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
-						if wasPreExisting, err := controller.DeleteDataFile(filePath); err != nil {
-							log.Fatalf("Error delete file %s, %s\n", fileName, err.Error())
+						wasPreExisting, err := controller.DeleteDataFile(filePath)
+						if err != nil {
+							log.Fatalf("Error delete file %s, %s\n", filePath, err.Error())
+						}
+						if wasPreExisting {
+							log.Printf("deleted %s\n", filePath)
 						} else {
-							if wasPreExisting {
-								log.Printf("deleted %s\n", fileName)
-							} else {
-								log.Printf("%s did not exist\n", fileName)
-							}
+							log.Printf("%s did not exist\n", filePath)
 						}
 
 						return nil
