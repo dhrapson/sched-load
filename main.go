@@ -99,9 +99,9 @@ func main() {
 			},
 		},
 		{
-			Name:  "set-schedule",
+			Name:    "set-schedule",
 			Aliases: []string{"ss"},
-			Usage: "set a schedule for collection of uploaded data files",
+			Usage:   "set a schedule for collection of uploaded data files",
 			Subcommands: []cli.Command{
 				{
 					Name:  "daily",
