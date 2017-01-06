@@ -137,7 +137,7 @@ var _ = Describe("SchedLoad", func() {
 				args = []string{"help"}
 			})
 
-			It("exits nicely", func() {
+			It("prints a nice help message", func() {
 				Ω(session.Out).Should(Say("help"))
 			})
 		})
@@ -157,7 +157,7 @@ var _ = Describe("SchedLoad", func() {
 				killProxyServer(proxyCommand)
 			})
 
-			It("exits with zero error code", func() {
+			It("is able to connect through the proxy server", func() {
 				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
 			})
 
@@ -179,7 +179,7 @@ var _ = Describe("SchedLoad", func() {
 				killProxyServer(proxyCommand)
 			})
 
-			It("exits with zero error code", func() {
+			It("throws an error", func() {
 				Ω(session.Err).Should(Say(dateFormatRegex + " Error connecting: RequestError: send request failed"))
 			})
 
@@ -204,7 +204,7 @@ var _ = Describe("SchedLoad", func() {
 					args = []string{"foo"}
 				})
 
-				It("exits with non-zero error code", func() {
+				It("indicates that the command was invalid", func() {
 					Ω(session.Err).Should(Say(dateFormatRegex + " Invalid"))
 				})
 			})
@@ -222,7 +222,7 @@ var _ = Describe("SchedLoad", func() {
 					unsetEnv()
 				})
 
-				It("exits with non-zero error code", func() {
+				It("throws an error", func() {
 					Ω(session.Err).Should(Say("error connecting to proxy"))
 				})
 
@@ -234,7 +234,7 @@ var _ = Describe("SchedLoad", func() {
 					args = []string{"status"}
 				})
 
-				It("exits with non-zero error code", func() {
+				It("indicates a credentials issue", func() {
 					Ω(session.Err).Should(Say(dateFormatRegex + " Credentials not set"))
 				})
 
