@@ -87,6 +87,33 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
+Describe("the ListDataFiles operation", func() {
+		var result []string
+		JustBeforeEach(func() {
+			result, err = controller.ListDataFiles()
+		})
+
+		Context("when the IaaS is connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{FilesList: []string{"somefile", "INPUT/thefile", "INPUT/otherfile", "PROCESSED/anotherone"}}
+			})
+			It("finds the files within INPUT", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result).Should(Equal([]string {"INPUT/thefile", "INPUT/otherfile",}))
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeNil())
+			})
+		})
+	})
+
 	Describe("the UploadDataFile operation", func() {
 		var result string
 		JustBeforeEach(func() {

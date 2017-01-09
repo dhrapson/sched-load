@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 )
 
 type Controller struct {
@@ -18,6 +19,22 @@ func (controller Controller) Status() (string, error) {
 		return "error", err
 	}
 	return "connected", nil
+}
+
+func (controller Controller) ListDataFiles() (result []string, err error) {
+
+	var fileNames []string
+	if fileNames, err = controller.Client.ListFiles(); err != nil {
+		return
+	}
+
+	for _, fileName := range fileNames {
+		if strings.Index(fileName, "INPUT/") == 0 {
+			result = append(result, fileName)
+		}
+	}
+
+	return
 }
 
 func (controller Controller) UploadDataFile(filePath string) (result string, err error) {
