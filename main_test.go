@@ -111,6 +111,17 @@ var _ = Describe("SchedLoad", func() {
 				})
 			})
 
+			Context("When listing", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "list"}
+				})
+
+				It("finds the uploaded file", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + ` listing files:
+	INPUT/test-file.csv`))
+				})
+			})
+
 			Context("When deleting an existing file", func() {
 				BeforeEach(func() {
 					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "data-file", "delete", "-r", "test-file.csv"}
@@ -118,6 +129,17 @@ var _ = Describe("SchedLoad", func() {
 
 				It("exits nicely", func() {
 					Ω(session.Err).Should(Say(dateFormatRegex + " deleted test-file.csv"))
+				})
+			})
+
+			Context("When listing", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "list"}
+				})
+
+				It("finds nothing", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + ` listing files:
+	none found`))
 				})
 			})
 

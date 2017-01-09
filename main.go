@@ -91,6 +91,33 @@ func main() {
 					},
 				},
 				{
+					Name:    "list",
+					Aliases: []string{"l"},
+					Usage:   "list remote data files",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						files, err := controller.ListDataFiles()
+						if err != nil {
+							log.Fatalf("Error listing data files, %s\n", err.Error())
+						}
+
+						var filesList string
+
+						if len(files) == 0 {
+							filesList = "\tnone found"
+						}
+						for _, filePath := range files {
+							filesList += "\t"+filePath+"\n"
+						}
+						log.Printf("listing files:\n%s", filesList)
+
+						return nil
+					},
+				},
+				{
 					Name:    "upload",
 					Aliases: []string{"u"},
 					Usage:   "upload a data file",
