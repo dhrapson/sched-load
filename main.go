@@ -91,9 +91,9 @@ func main() {
 					},
 				},
 				{
-					Name:    "list",
-					Aliases: []string{"l"},
-					Usage:   "list remote data files",
+					Name:    "list-uploaded",
+					Aliases: []string{"lu"},
+					Usage:   "list remote unprocessed data files",
 					Action: func(c *cli.Context) error {
 
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}

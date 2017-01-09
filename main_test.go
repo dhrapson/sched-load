@@ -113,7 +113,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When listing", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "list"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "list-uploaded"}
 				})
 
 				It("finds the uploaded file", func() {
@@ -134,7 +134,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When listing", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "list"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "lu"}
 				})
 
 				It("finds nothing", func() {
