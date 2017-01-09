@@ -110,7 +110,7 @@ func main() {
 							filesList = "\tnone found"
 						}
 						for _, filePath := range files {
-							filesList += "\t"+filePath+"\n"
+							filesList += "\t" + filePath + "\n"
 						}
 						log.Printf("listing files:\n%s", filesList)
 

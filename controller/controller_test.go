@@ -87,7 +87,7 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
-Describe("the ListDataFiles operation", func() {
+	Describe("the ListDataFiles operation", func() {
 		var result []string
 		JustBeforeEach(func() {
 			result, err = controller.ListDataFiles()
@@ -99,7 +99,7 @@ Describe("the ListDataFiles operation", func() {
 			})
 			It("finds the files within INPUT", func() {
 				Ω(err).ShouldNot(HaveOccurred())
-				Ω(result).Should(Equal([]string {"INPUT/thefile", "INPUT/otherfile",}))
+				Ω(result).Should(Equal([]string{"INPUT/thefile", "INPUT/otherfile"}))
 			})
 		})
 
