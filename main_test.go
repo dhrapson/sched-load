@@ -284,6 +284,7 @@ var _ = Describe("SchedLoad", func() {
 
 				AfterEach(func() {
 					unsetEnv()
+					os.Unsetenv("HTTP_PROXY")
 				})
 
 				It("throws an error", func() {
