@@ -296,7 +296,8 @@ var _ = Describe("SchedLoad", func() {
 			Context("When run without AWS creds", func() {
 
 				BeforeEach(func() {
-					args = []string{"status"}
+					unsetEnv()
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "status"}
 				})
 
 				It("indicates a credentials issue", func() {
