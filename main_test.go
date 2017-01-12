@@ -92,7 +92,7 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with status argument", func() {
 			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "status"}
+				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "status"}
 			})
 
 			It("exits nicely", func() {
@@ -103,7 +103,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing data files", func() {
 			Context("When uploading", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "upload", "-f", "iaas/fixtures/test-file.csv"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "df", "upload", "-f", "iaas/fixtures/test-file.csv"}
 				})
 
 				It("exits nicely", func() {
@@ -113,7 +113,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When listing", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "list-uploaded"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "df", "list-uploaded"}
 				})
 
 				It("finds the uploaded file", func() {
@@ -124,7 +124,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting an existing file", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "data-file", "delete", "-r", "test-file.csv"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "data-file", "delete", "-r", "test-file.csv"}
 				})
 
 				It("exits nicely", func() {
@@ -134,7 +134,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When listing", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "df", "lu"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "df", "lu"}
 				})
 
 				It("finds nothing", func() {
@@ -145,7 +145,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting a non-existant file", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "data-file", "delete", "-r", "test-file.csv"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "data-file", "delete", "-r", "test-file.csv"}
 				})
 
 				It("exits nicely", func() {
@@ -157,7 +157,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing schedules", func() {
 			Context("When setting daily", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "set-schedule", "daily"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "set-schedule", "daily"}
 				})
 
 				It("indicates success", func() {
@@ -167,7 +167,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "schedule"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule"}
 				})
 
 				It("exits nicely", func() {
@@ -177,7 +177,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When removing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "set-schedule", "none"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "set-schedule", "none"}
 				})
 
 				It("indicates success", func() {
@@ -187,7 +187,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing non-existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "schedule"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule"}
 				})
 
 				It("exits nicely", func() {
@@ -209,7 +209,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When run with an open proxy server", func() {
 
 			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "status"}
+				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "status"}
 				setEnv()
 				// NB. use the openproxy port of 56565
 				os.Setenv("HTTP_PROXY", "localhost:56565")
@@ -230,7 +230,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When run with a blocking proxy server", func() {
 
 			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "status"}
+				args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "status"}
 				setEnv()
 				// NB. use the openproxy port of 56565
 				os.Setenv("HTTP_PROXY", "localhost:56565")
@@ -276,7 +276,7 @@ var _ = Describe("SchedLoad", func() {
 			Context("When run with a missing proxy server", func() {
 
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client", "status"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "status"}
 					setEnv()
 					// NB. Attempt to choose a port that is not otherwise in use
 					os.Setenv("HTTP_PROXY", "localhost:45532")

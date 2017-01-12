@@ -37,7 +37,7 @@ var _ = Describe("The IaaS Client", func() {
 	})
 
 	JustBeforeEach(func() {
-		client = AwsClient{IntegratorId: "test-integrator", ClientId: "test-client", Region: region}
+		client = AwsClient{IntegratorId: "test-integrator", ClientId: "test-client-cli", Region: region}
 	})
 
 	Describe("Interacting with AWS", func() {
