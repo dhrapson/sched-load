@@ -47,6 +47,46 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
+	Describe("the ImmediateDataFileCollectionStatus operation", func() {
+		var result bool
+		JustBeforeEach(func() {
+			result, err = controller.ImmediateDataFileCollectionStatus()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			Context("when the setting is in place", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates that it is enabled", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+
+			Context("when the setting is NOT in place", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates that is is disabled", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+	})
+
 	Describe("the EnableImmediateDataFileCollection operation", func() {
 		var result bool
 		JustBeforeEach(func() {

@@ -38,6 +38,11 @@ func (controller Controller) ListDataFiles() (result []string, err error) {
 	return
 }
 
+func (controller Controller) ImmediateDataFileCollectionStatus() (status bool, err error) {
+	status, err = controller.Client.FileUploadNotification()
+	return
+}
+
 func (controller Controller) EnableImmediateDataFileCollection() (wasNewlyEnabled bool, err error) {
 	wasNewlyEnabled, err = controller.Client.AddFileUploadNotification()
 	return
