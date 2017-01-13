@@ -19,6 +19,7 @@ type IaaSClient interface {
 	ListFiles() (names []string, err error)
 	UploadFile(filepath string, target string) (name string, err error)
 	AddFileUploadNotification() (wasNewConfiguration bool, err error)
+	FileUploadNotification() (isSet bool, err error)
 	RemoveFileUploadNotification() (wasPreExisting bool, err error)
 }
 
@@ -58,6 +59,25 @@ func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err
 	fullConfig = fullConfig.SetLambdaFunctionConfigurations(configs)
 	_, err = client.putUploadNotificationConfiguration(fullConfig)
 	log.Println("Upload notification removed for", client.ClientId)
+	return
+}
+
+func (client AwsClient) FileUploadNotification() (isSet bool, err error) {
+
+	fullConfig, err := client.getUploadNotificationConfiguration()
+	if err != nil {
+		return
+	}
+	configs := fullConfig.LambdaFunctionConfigurations
+
+	for _, configuration := range configs {
+		if *configuration.Id == client.getNotificationId() {
+			log.Println("Upload notifications are set for", client.ClientId)
+			isSet = true
+			break
+		}
+	}
+	log.Println("Upload notifications are not set for", client.ClientId)
 	return
 }
 

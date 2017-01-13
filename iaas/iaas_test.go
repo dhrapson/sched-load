@@ -74,6 +74,10 @@ var _ = Describe("The IaaS Client", func() {
 				})
 
 				It("finds the added notification", func() {
+					status, err = client.FileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeTrue())
+
 					status, err = client.AddFileUploadNotification()
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(status).Should(BeFalse())
@@ -86,6 +90,10 @@ var _ = Describe("The IaaS Client", func() {
 				})
 
 				It("does not find the removed notification", func() {
+					status, err = client.FileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeFalse())
+
 					status, err = client.RemoveFileUploadNotification()
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(status).Should(BeFalse())

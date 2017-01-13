@@ -43,6 +43,13 @@ func (client IaaSClientMock) AddFileUploadNotification() (wasNewConfiguration bo
 	return client.Success, nil
 }
 
+func (client IaaSClientMock) FileUploadNotification() (isSet bool, err error) {
+	if client.Err != nil {
+		return false, client.Err
+	}
+	return client.Success, nil
+}
+
 func (client IaaSClientMock) RemoveFileUploadNotification() (wasPreExisting bool, err error) {
 	if client.Err != nil {
 		return false, client.Err
