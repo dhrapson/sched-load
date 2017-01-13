@@ -198,6 +198,7 @@ func (client AwsClient) UploadFile(filepath string, targetName string) (name str
 		return
 	}
 	name = targetName
+	log.Println("File", filepath, "uploaded to", targetName)
 	return
 }
 
@@ -236,7 +237,7 @@ func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedF
 		return
 	}
 
-	log.Println("Downloaded file", file.Name(), numBytes, "bytes")
+	log.Println("Downloaded ", remotePath, "to", file.Name(), "size", numBytes, "bytes")
 
 	return
 }
