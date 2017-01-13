@@ -158,6 +158,38 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
+		Context("When managing immediate file collection", func() {
+
+			Context("When enabling immediate collection", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "enable"}
+				})
+
+				It("enables immediate collection", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Enabled immediate collection"))
+				})
+
+				It("indicates that nothing was done", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already enabled"))
+				})
+			})
+
+			Context("When disabling immediate collection", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "disable"}
+				})
+
+				It("disables immediate collection", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Disabled immediate collection"))
+				})
+
+				It("indicates that nothing was done", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already disabled"))
+				})
+			})
+
+		})
+
 		Context("When managing schedules", func() {
 			Context("When setting daily", func() {
 				BeforeEach(func() {

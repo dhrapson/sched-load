@@ -161,6 +161,54 @@ func main() {
 			},
 		},
 		{
+			Name:    "immediate-collection",
+			Aliases: []string{"ic"},
+			Usage:   "enable/disable immediate collection of uploaded data files",
+			Subcommands: []cli.Command{
+				{
+					Name:  "enable",
+					Usage: "enable immediate data file collection",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						if wasNewlySet, err := controller.EnableImmediateDataFileCollection(); err != nil {
+							log.Fatalf("Error connecting: %s\n", err.Error())
+						} else {
+
+							if wasNewlySet {
+								log.Println("Enabled immediate collection")
+							} else {
+								log.Println("Immediate collection was already enabled")
+							}
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "disable",
+					Usage: "disable immediate data file collection",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						if wasPreExisting, err := controller.DisableImmediateDataFileCollection(); err != nil {
+							log.Fatalf("Error connecting: %s\n", err.Error())
+						} else {
+							if wasPreExisting {
+								log.Println("Disabled immediate collection")
+							} else {
+								log.Println("Immediate collection was already disabled")
+							}
+						}
+						return nil
+					},
+				},
+			},
+		},
+		{
 			Name:    "set-schedule",
 			Aliases: []string{"ss"},
 			Usage:   "set a schedule for collection of uploaded data files",
