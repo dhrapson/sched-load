@@ -250,7 +250,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing schedules", func() {
 			Context("When setting daily", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "set-schedule", "daily"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule", "daily"}
 				})
 
 				It("indicates success", func() {
@@ -260,7 +260,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule", "status"}
 				})
 
 				It("exits nicely", func() {
@@ -270,7 +270,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When removing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "set-schedule", "none"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule", "none"}
 				})
 
 				It("indicates success", func() {
@@ -280,7 +280,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing non-existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule"}
+					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "schedule", "status"}
 				})
 
 				It("exits nicely", func() {

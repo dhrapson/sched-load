@@ -145,22 +145,6 @@ func main() {
 			},
 		},
 		{
-			Name:  "schedule",
-			Usage: "show the schedule for collection of uploaded data files",
-			Action: func(c *cli.Context) error {
-
-				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
-				controller := controller.Controller{Client: iaasClient}
-
-				if schedule, err := controller.GetSchedule(); err != nil {
-					log.Fatalf("Error connecting: %s\n", err.Error())
-				} else {
-					log.Println("existing schedule: " + schedule)
-				}
-				return nil
-			},
-		},
-		{
 			Name:    "immediate-collection",
 			Aliases: []string{"ic"},
 			Usage:   "enable/disable immediate collection of uploaded data files",
@@ -228,10 +212,26 @@ func main() {
 			},
 		},
 		{
-			Name:    "set-schedule",
-			Aliases: []string{"ss"},
+			Name:    "schedule",
+			Aliases: []string{"s"},
 			Usage:   "set a schedule for collection of uploaded data files",
 			Subcommands: []cli.Command{
+				{
+					Name:  "status",
+					Usage: "show the schedule status",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						if schedule, err := controller.GetSchedule(); err != nil {
+							log.Fatalf("Error connecting: %s\n", err.Error())
+						} else {
+							log.Println("existing schedule: " + schedule)
+						}
+						return nil
+					},
+				},
 				{
 					Name:  "daily",
 					Usage: "set a daily schedule",
