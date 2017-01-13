@@ -55,7 +55,44 @@ var _ = Describe("The IaaS Client", func() {
 				tempDir string
 			)
 
-			Context("connecting with valid connection details", func() {
+			Context("managing bucket notifications", func() {
+				BeforeEach(func() {
+					setEnv()
+				})
+
+				AfterEach(func() {
+					unsetEnv()
+				})
+
+				It("connects correctly & add the notification", func() {
+					_, err = client.RemoveFileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+
+					status, err = client.AddFileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeTrue())
+				})
+
+				It("finds the added notification", func() {
+					status, err = client.AddFileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeFalse())
+				})
+
+				It("removes the added notification", func() {
+					status, err = client.RemoveFileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeTrue())
+				})
+
+				It("does not find the removed notification", func() {
+					status, err = client.RemoveFileUploadNotification()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(status).Should(BeFalse())
+				})
+			})
+
+			Context("managing files with valid connection details", func() {
 				BeforeEach(func() {
 					setEnv()
 					tempDir, err = ioutil.TempDir("", "iaas-uploading-files")

@@ -1,14 +1,16 @@
 package iaas
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"log"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 type IaaSClient interface {
@@ -16,6 +18,8 @@ type IaaSClient interface {
 	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
 	ListFiles() (names []string, err error)
 	UploadFile(filepath string, target string) (name string, err error)
+	AddFileUploadNotification() (wasNewConfiguration bool, err error)
+	RemoveFileUploadNotification() (wasPreExisting bool, err error)
 }
 
 type AwsClient struct {
@@ -23,6 +27,80 @@ type AwsClient struct {
 	session      *session.Session
 	IntegratorId string
 	ClientId     string
+}
+
+func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err error) {
+	fullConfig, err := client.getUploadNotificationConfiguration()
+	if err != nil {
+		return
+	}
+	configs := fullConfig.LambdaFunctionConfigurations
+
+	foundIndex := -1
+	for i, configuration := range configs {
+		if *configuration.Id == client.getNotificationId() {
+			foundIndex = i
+			break
+		}
+	}
+
+	if foundIndex < 0 {
+		log.Println("Upload notifications not found when attempting removal for", client.ClientId)
+		return
+	}
+
+	wasPreExisting = true
+
+	// dont care about order, swap final element with unwanted element and resize slice 1 smaller
+	configs[len(configs)-1], configs[foundIndex] = configs[foundIndex], configs[len(configs)-1]
+	configs = configs[:len(configs)-1]
+
+	fullConfig = fullConfig.SetLambdaFunctionConfigurations(configs)
+	_, err = client.putUploadNotificationConfiguration(fullConfig)
+	log.Println("Upload notification removed for", client.ClientId)
+	return
+}
+
+func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, err error) {
+
+	fullConfig, err := client.getUploadNotificationConfiguration()
+	if err != nil {
+		return
+	}
+	configs := fullConfig.LambdaFunctionConfigurations
+
+	for _, configuration := range configs {
+		if *configuration.Id == client.getNotificationId() {
+			log.Println("Upload notifications were already configured when adding for", client.ClientId)
+			return
+		}
+	}
+	wasNewConfiguration = true
+	accountId, err := client.getAccountId()
+
+	thisConfig := &s3.LambdaFunctionConfiguration{
+		Events: []*string{
+			aws.String("s3:ObjectCreated:*"),
+		},
+		LambdaFunctionArn: aws.String("arn:aws:lambda:" + client.Region + ":" + accountId + ":function:s3notifier"),
+		Filter: &s3.NotificationConfigurationFilter{
+			Key: &s3.KeyFilter{
+				FilterRules: []*s3.FilterRule{
+					{
+						Name:  aws.String("Prefix"),
+						Value: aws.String(client.getNotificationPrefix()),
+					},
+				},
+			},
+		},
+		Id: aws.String(client.getNotificationId()),
+	}
+
+	configs = append(configs, thisConfig)
+	fullConfig = fullConfig.SetLambdaFunctionConfigurations(configs)
+	_, err = client.putUploadNotificationConfiguration(fullConfig)
+	log.Println("Upload notifications added for", client.ClientId)
+	return
 }
 
 func (client AwsClient) ListFiles() (names []string, err error) {
@@ -161,6 +239,83 @@ func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedF
 	log.Println("Downloaded file", file.Name(), numBytes, "bytes")
 
 	return
+}
+
+func (client AwsClient) getUploadNotificationConfiguration() (config *s3.NotificationConfiguration, err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := s3.New(session)
+
+	params := &s3.GetBucketNotificationConfigurationRequest{
+		Bucket: aws.String("/" + client.IntegratorId),
+	}
+	resp, err := svc.GetBucketNotificationConfiguration(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	config = resp
+	return
+}
+
+func (client AwsClient) putUploadNotificationConfiguration(config *s3.NotificationConfiguration) (result bool, err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := s3.New(session)
+
+	params := &s3.PutBucketNotificationConfigurationInput{
+		Bucket: aws.String("/" + client.IntegratorId),
+		NotificationConfiguration: config,
+	}
+	_, err = svc.PutBucketNotificationConfiguration(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	result = true
+	return
+}
+
+func (client AwsClient) getAccountId() (accountId string, err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.GetUserInput{}
+	resp, err := svc.GetUser(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	userArn := *resp.User.Arn
+	// ARNs look like arn:aws:iam::ACCOUNTID:user/USERID
+	// Note the double colon after iam, which makes account ID element 4 rather than 3
+	accountId = strings.Split(userArn, ":")[4]
+	return
+}
+
+func (client AwsClient) getNotificationId() string {
+	return "S3ObjectCreated-" + client.IntegratorId + "-" + client.ClientId
+}
+
+func (client AwsClient) getNotificationPrefix() string {
+	return client.ClientId + "/INPUT"
 }
 
 func (client AwsClient) connect() (sess *session.Session, err error) {
