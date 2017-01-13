@@ -49,6 +49,13 @@ func killProxyServer(cmd *exec.Cmd) {
 	Ω(e).ShouldNot(HaveOccurred(), "Error killing process: "+cmd.Path)
 }
 
+func runCommand(path string, exitCode int, argsList ...string) {
+	command := exec.Command(path, argsList...)
+	session, err = Start(command, GinkgoWriter, GinkgoWriter)
+	Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
+	Eventually(session).Should(Exit(exitCode), cliPath+" exited with non-zero error code")
+}
+
 var _ = Describe("SchedLoad", func() {
 
 	BeforeSuite(func() {
@@ -84,10 +91,7 @@ var _ = Describe("SchedLoad", func() {
 		})
 
 		JustBeforeEach(func() {
-			command := exec.Command(cliPath, args...)
-			session, err = Start(command, GinkgoWriter, GinkgoWriter)
-			Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
-			Eventually(session).Should(Exit(expectedExitCode), cliPath+" exited with non-zero error code")
+			runCommand(cliPath, expectedExitCode, args...)
 		})
 
 		Context("When run with status argument", func() {
