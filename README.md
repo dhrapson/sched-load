@@ -18,14 +18,26 @@ the schedule on which the object store owner should expect files.
 The project is building in [TravisCI](https://travis-ci.org/dhrapson/sched-load) and is managed via a public [Tracker](https://www.pivotaltracker.com/n/projects/1941641) board
 
 ## To build
+
 Fetch & build from github.com
 `go get github.com/dhrapson/sched-load`
 
 OR if changing locally
+
 ```
 go install
 sched-load status
 ```
 
 ## To run
-Run `sched-load help` for running instructions
+
+* Set AWS credentials in one of the standard ways: .aws/credentials or env vars
+* Run `sched-load help` for running instructions
+
+## To test
+
+```
+TEST_AWS_ACCESS_KEY_ID='your_aws_key_id' \
+TEST_AWS_SECRET_ACCESS_KEY='your_aws_secret_key' \
+go test -v .
+```
