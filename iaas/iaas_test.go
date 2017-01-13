@@ -146,6 +146,9 @@ var _ = Describe("The IaaS Client", func() {
 			})
 
 			Context("with invalid connection details", func() {
+				BeforeEach(func() {
+					unsetEnv()
+				})
 
 				Context("when listing files", func() {
 					BeforeEach(func() {
