@@ -35,3 +35,17 @@ func (client IaaSClientMock) DeleteFile(remotePath string) (result bool, err err
 	}
 	return client.Success, nil
 }
+
+func (client IaaSClientMock) AddFileUploadNotification() (wasNewConfiguration bool, err error) {
+	if client.Err != nil {
+		return false, client.Err
+	}
+	return client.Success, nil
+}
+
+func (client IaaSClientMock) RemoveFileUploadNotification() (wasPreExisting bool, err error) {
+	if client.Err != nil {
+		return false, client.Err
+	}
+	return client.Success, nil
+}
