@@ -2,11 +2,12 @@ package controller
 
 import (
 	"errors"
-	"github.com/dhrapson/sched-load/iaas"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/dhrapson/sched-load/iaas"
 )
 
 type Controller struct {
@@ -34,6 +35,16 @@ func (controller Controller) ListDataFiles() (result []string, err error) {
 		}
 	}
 
+	return
+}
+
+func (controller Controller) EnableImmediateDataFileCollection() (result bool, err error) {
+	result, err = controller.Client.AddFileUploadNotification()
+	return
+}
+
+func (controller Controller) DisableImmediateDataFileCollection() (result bool, err error) {
+	result, err = controller.Client.RemoveFileUploadNotification()
 	return
 }
 

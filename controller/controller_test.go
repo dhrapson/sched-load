@@ -47,6 +47,86 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
+	Describe("the EnableImmediateDataFileCollection operation", func() {
+		var result bool
+		JustBeforeEach(func() {
+			result, err = controller.EnableImmediateDataFileCollection()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			Context("when the setting was previously in place", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: false}
+				})
+				It("indicates that it was already enabled", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeFalse())
+				})
+			})
+
+			Context("when the setting was NOT previously in place", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates success in enabling it", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+	})
+
+	Describe("the DisableImmediateDataFileCollection operation", func() {
+		var result bool
+		JustBeforeEach(func() {
+			result, err = controller.DisableImmediateDataFileCollection()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			Context("when the setting was previously in place", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates success in disabling it", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+
+			Context("when the setting was NOT previously in place", func() {
+				BeforeEach(func() {
+					iaasClient = IaaSClientMock{Success: true}
+				})
+				It("indicates that is was alread disabled", func() {
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(result).Should(BeTrue())
+				})
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+	})
+
 	Describe("the DeleteDataFile operation", func() {
 		var result bool
 		JustBeforeEach(func() {
