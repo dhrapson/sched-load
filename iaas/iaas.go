@@ -134,7 +134,7 @@ func (client AwsClient) ListFiles() (names []string, err error) {
 	svc := s3.New(session)
 
 	params := &s3.ListObjectsInput{
-		Bucket: aws.String("/" + client.IntegratorId),
+		Bucket: aws.String(client.bucketName()),
 		Prefix: aws.String(client.ClientId),
 	}
 	resp, err := svc.ListObjects(params)
@@ -174,7 +174,7 @@ func (client AwsClient) DeleteFile(remotePath string) (wasPreExisting bool, err 
 	targetFile := client.ClientId + "/" + remotePath
 
 	params := &s3.DeleteObjectInput{
-		Bucket: aws.String("/" + client.IntegratorId),
+		Bucket: aws.String(client.bucketName()),
 		Key:    aws.String(targetFile),
 	}
 
@@ -206,7 +206,7 @@ func (client AwsClient) UploadFile(filepath string, targetName string) (name str
 	defer fileReader.Close()
 
 	params := &s3.PutObjectInput{
-		Bucket: aws.String("/" + client.IntegratorId),
+		Bucket: aws.String(client.bucketName()),
 		Key:    aws.String(targetFile),
 		Body:   fileReader,
 	}
@@ -249,7 +249,7 @@ func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedF
 	downloader := s3manager.NewDownloader(session)
 	numBytes, err := downloader.Download(file,
 		&s3.GetObjectInput{
-			Bucket: aws.String("/" + client.IntegratorId),
+			Bucket: aws.String(client.bucketName()),
 			Key:    aws.String(targetFile),
 		})
 	if err != nil {
@@ -272,7 +272,7 @@ func (client AwsClient) getUploadNotificationConfiguration() (config *s3.Notific
 	svc := s3.New(session)
 
 	params := &s3.GetBucketNotificationConfigurationRequest{
-		Bucket: aws.String("/" + client.IntegratorId),
+		Bucket: aws.String(client.bucketName()),
 	}
 	resp, err := svc.GetBucketNotificationConfiguration(params)
 
@@ -294,7 +294,7 @@ func (client AwsClient) putUploadNotificationConfiguration(config *s3.Notificati
 	svc := s3.New(session)
 
 	params := &s3.PutBucketNotificationConfigurationInput{
-		Bucket: aws.String("/" + client.IntegratorId),
+		Bucket: aws.String(client.bucketName()),
 		NotificationConfiguration: config,
 	}
 	_, err = svc.PutBucketNotificationConfiguration(params)
@@ -337,6 +337,10 @@ func (client AwsClient) getNotificationId() string {
 
 func (client AwsClient) getNotificationPrefix() string {
 	return client.ClientId + "/INPUT"
+}
+
+func (client AwsClient) bucketName() string {
+	return "/" + client.IntegratorId
 }
 
 func (client AwsClient) connect() (sess *session.Session, err error) {
