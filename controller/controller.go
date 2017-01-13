@@ -38,13 +38,13 @@ func (controller Controller) ListDataFiles() (result []string, err error) {
 	return
 }
 
-func (controller Controller) EnableImmediateDataFileCollection() (result bool, err error) {
-	result, err = controller.Client.AddFileUploadNotification()
+func (controller Controller) EnableImmediateDataFileCollection() (wasNewlyEnabled bool, err error) {
+	wasNewlyEnabled, err = controller.Client.AddFileUploadNotification()
 	return
 }
 
-func (controller Controller) DisableImmediateDataFileCollection() (result bool, err error) {
-	result, err = controller.Client.RemoveFileUploadNotification()
+func (controller Controller) DisableImmediateDataFileCollection() (removedExisting bool, err error) {
+	removedExisting, err = controller.Client.RemoveFileUploadNotification()
 	return
 }
 
