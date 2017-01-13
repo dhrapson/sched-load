@@ -193,15 +193,14 @@ func main() {
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
-						if wasNewlySet, err := controller.EnableImmediateDataFileCollection(); err != nil {
+						wasNewlySet, err := controller.EnableImmediateDataFileCollection()
+						if err != nil {
 							log.Fatalf("Error connecting: %s\n", err.Error())
+						}
+						if wasNewlySet {
+							log.Println("Enabled immediate collection")
 						} else {
-
-							if wasNewlySet {
-								log.Println("Enabled immediate collection")
-							} else {
-								log.Println("Immediate collection was already enabled")
-							}
+							log.Println("Immediate collection was already enabled")
 						}
 						return nil
 					},
@@ -214,14 +213,14 @@ func main() {
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
-						if wasPreExisting, err := controller.DisableImmediateDataFileCollection(); err != nil {
+						wasPreExisting, err := controller.DisableImmediateDataFileCollection()
+						if err != nil {
 							log.Fatalf("Error connecting: %s\n", err.Error())
+						}
+						if wasPreExisting {
+							log.Println("Disabled immediate collection")
 						} else {
-							if wasPreExisting {
-								log.Println("Disabled immediate collection")
-							} else {
-								log.Println("Immediate collection was already disabled")
-							}
+							log.Println("Immediate collection was already disabled")
 						}
 						return nil
 					},
@@ -241,15 +240,14 @@ func main() {
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
-						if wasPreExisting, err := controller.SetSchedule("DAILY"); err != nil {
+						wasPreExisting, err := controller.SetSchedule("DAILY")
+						if err != nil {
 							log.Fatalf("Error connecting: %s\n", err.Error())
+						}
+						if wasPreExisting {
+							log.Println("Set daily schedule")
 						} else {
-
-							if wasPreExisting {
-								log.Println("Set daily schedule")
-							} else {
-								log.Println("Daily schedule was already set")
-							}
+							log.Println("Daily schedule was already set")
 						}
 						return nil
 					},
@@ -262,14 +260,14 @@ func main() {
 						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
-						if wasPreExisting, err := controller.RemoveSchedule(); err != nil {
+						wasPreExisting, err := controller.RemoveSchedule()
+						if err != nil {
 							log.Fatalf("Error connecting: %s\n", err.Error())
+						}
+						if wasPreExisting {
+							log.Println("Removed schedule")
 						} else {
-							if wasPreExisting {
-								log.Println("Removed schedule")
-							} else {
-								log.Println("No schedule existed to remove")
-							}
+							log.Println("No schedule existed to remove")
 						}
 						return nil
 					},
