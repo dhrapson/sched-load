@@ -30,7 +30,8 @@ func (controller Controller) ListDataFiles() (result []string, err error) {
 	}
 
 	for _, fileName := range fileNames {
-		if strings.Index(fileName, "INPUT/") == 0 {
+		// if its a key within INPUT/, and not INPUT/ itself
+		if strings.Index(fileName, "INPUT/") == 0 && len(fileName) > 6 {
 			result = append(result, fileName)
 		}
 	}
