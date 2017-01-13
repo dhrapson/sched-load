@@ -58,6 +58,11 @@ func runCommand(path string, exitCode int, argsList ...string) (*Session, error)
 	return sess, localError
 }
 
+func waitForAws() {
+	// AWS takes time to store settings
+	time.Sleep(15 * time.Second)
+}
+
 var _ = Describe("SchedLoad", func() {
 
 	BeforeSuite(func() {
@@ -165,32 +170,81 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When enabling immediate collection", func() {
 				BeforeEach(func() {
+					setupArgs := []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "disable"}
+					runCommand(cliPath, 0, setupArgs...)
+					waitForAws()
 					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "enable"}
 				})
 
 				It("enables immediate collection", func() {
 					Ω(session.Err).Should(Say(dateFormatRegex + " Enabled immediate collection"))
 				})
+			})
 
-				It("indicates that nothing was done", func() {
-					Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already enabled"))
+			Context("When immediate collection is enabled", func() {
+				BeforeEach(func() {
+					enableArgs := []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "enable"}
+					runCommand(cliPath, 0, enableArgs...)
+					waitForAws()
+				})
+
+				Context("status command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "status"}
+					})
+					It("shows status of enabled", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection status is enabled"))
+					})
+				})
+
+				Context("enable command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "enable"}
+					})
+					It("indicates that nothing was done", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already enabled"))
+					})
+				})
+			})
+
+			Context("When immediate collection is disabled", func() {
+				BeforeEach(func() {
+					enableArgs := []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "disable"}
+					runCommand(cliPath, 0, enableArgs...)
+					waitForAws()
+				})
+
+				Context("status command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "status"}
+					})
+					It("shows status of enabled", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection status is disabled"))
+					})
+				})
+
+				Context("enable command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "disable"}
+					})
+					It("indicates that nothing was done", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already disabled"))
+					})
 				})
 			})
 
 			Context("When disabling immediate collection", func() {
 				BeforeEach(func() {
+					setupArgs := []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "enable"}
+					runCommand(cliPath, 0, setupArgs...)
+					waitForAws()
 					args = []string{"--region", region, "--integrator", "test-integrator", "--client", "test-client-cli", "immediate-collection", "disable"}
 				})
 
 				It("disables immediate collection", func() {
 					Ω(session.Err).Should(Say(dateFormatRegex + " Disabled immediate collection"))
 				})
-
-				It("indicates that nothing was done", func() {
-					Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already disabled"))
-				})
 			})
-
 		})
 
 		Context("When managing schedules", func() {

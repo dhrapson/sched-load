@@ -166,6 +166,26 @@ func main() {
 			Usage:   "enable/disable immediate collection of uploaded data files",
 			Subcommands: []cli.Command{
 				{
+					Name:  "status",
+					Usage: "show the immediate data file collection status",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						status, err := controller.ImmediateDataFileCollectionStatus()
+						if err != nil {
+							log.Fatalf("Error connecting: %s\n", err.Error())
+						}
+						if status {
+							log.Println("Immediate collection status is enabled")
+						} else {
+							log.Println("Immediate collection status is disabled")
+						}
+						return nil
+					},
+				},
+				{
 					Name:  "enable",
 					Usage: "enable immediate data file collection",
 					Action: func(c *cli.Context) error {
