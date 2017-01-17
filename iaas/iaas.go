@@ -205,10 +205,13 @@ func (client AwsClient) UploadFile(filepath string, targetName string) (name str
 	}
 	defer fileReader.Close()
 
+	encType := "AES256"
+
 	params := &s3.PutObjectInput{
-		Bucket: aws.String(client.bucketName()),
-		Key:    aws.String(targetFile),
-		Body:   fileReader,
+		Bucket:               aws.String(client.bucketName()),
+		Key:                  aws.String(targetFile),
+		Body:                 fileReader,
+		ServerSideEncryption: &encType,
 	}
 
 	_, err = svc.PutObject(params)
