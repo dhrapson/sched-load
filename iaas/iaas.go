@@ -35,7 +35,7 @@ func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err
 	if err != nil {
 		return
 	}
-	configs := fullConfig.LambdaFunctionConfigurations
+	configs := fullConfig.TopicConfigurations
 
 	foundIndex := -1
 	for i, configuration := range configs {
@@ -56,7 +56,7 @@ func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err
 	configs[len(configs)-1], configs[foundIndex] = configs[foundIndex], configs[len(configs)-1]
 	configs = configs[:len(configs)-1]
 
-	fullConfig = fullConfig.SetLambdaFunctionConfigurations(configs)
+	fullConfig = fullConfig.SetTopicConfigurations(configs)
 	_, err = client.putUploadNotificationConfiguration(fullConfig)
 	log.Println("Upload notification removed for", client.ClientId)
 	return
@@ -68,7 +68,7 @@ func (client AwsClient) FileUploadNotification() (isSet bool, err error) {
 	if err != nil {
 		return
 	}
-	configs := fullConfig.LambdaFunctionConfigurations
+	configs := fullConfig.TopicConfigurations
 
 	for _, configuration := range configs {
 		if *configuration.Id == client.getNotificationId() {
@@ -87,7 +87,7 @@ func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, e
 	if err != nil {
 		return
 	}
-	configs := fullConfig.LambdaFunctionConfigurations
+	configs := fullConfig.TopicConfigurations
 
 	for _, configuration := range configs {
 		if *configuration.Id == client.getNotificationId() {
@@ -98,11 +98,11 @@ func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, e
 	wasNewConfiguration = true
 	accountId, err := client.getAccountId()
 
-	thisConfig := &s3.LambdaFunctionConfiguration{
+	thisConfig := &s3.TopicConfiguration{
 		Events: []*string{
 			aws.String("s3:ObjectCreated:*"),
 		},
-		LambdaFunctionArn: aws.String("arn:aws:lambda:" + client.Region + ":" + accountId + ":function:s3notifier"),
+		TopicArn: aws.String("arn:aws:sns:" + client.Region + ":" + accountId + ":S3NotifierTopic"),
 		Filter: &s3.NotificationConfigurationFilter{
 			Key: &s3.KeyFilter{
 				FilterRules: []*s3.FilterRule{
@@ -117,7 +117,7 @@ func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, e
 	}
 
 	configs = append(configs, thisConfig)
-	fullConfig = fullConfig.SetLambdaFunctionConfigurations(configs)
+	fullConfig = fullConfig.SetTopicConfigurations(configs)
 	_, err = client.putUploadNotificationConfiguration(fullConfig)
 	log.Println("Upload notifications added for", client.ClientId)
 	return
@@ -335,7 +335,7 @@ func (client AwsClient) getAccountId() (accountId string, err error) {
 }
 
 func (client AwsClient) getNotificationId() string {
-	return "S3ObjectCreated-" + client.IntegratorId + "-" + client.ClientId
+	return "S3ObjectCreatedSNS-" + client.IntegratorId + "-" + client.ClientId
 }
 
 func (client AwsClient) getNotificationPrefix() string {
