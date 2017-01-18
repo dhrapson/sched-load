@@ -72,12 +72,15 @@ func (client AwsClient) FileUploadNotification() (isSet bool, err error) {
 
 	for _, configuration := range configs {
 		if *configuration.Id == client.getNotificationId() {
-			log.Println("Upload notifications are set for", client.ClientId)
 			isSet = true
 			break
 		}
 	}
-	log.Println("Upload notifications are not set for", client.ClientId)
+	if isSet {
+		log.Println("Upload notifications are set for", client.ClientId)
+	} else {
+		log.Println("Upload notifications are not set for", client.ClientId)
+	}
 	return
 }
 
