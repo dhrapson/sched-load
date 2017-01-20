@@ -1,11 +1,12 @@
 package controller_test
 
 type IaaSClientMock struct {
-	FilesList []string
-	FileName  string
-	FilePath  string
-	Success   bool
-	Err       error
+	Credentials map[string]string
+	FilesList   []string
+	FileName    string
+	FilePath    string
+	Success     bool
+	Err         error
 }
 
 func (client IaaSClientMock) ListFiles() (names []string, err error) {
@@ -55,4 +56,15 @@ func (client IaaSClientMock) RemoveFileUploadNotification() (wasPreExisting bool
 		return false, client.Err
 	}
 	return client.Success, nil
+}
+
+func (client IaaSClientMock) CreateClientUser() (credentials map[string]string, err error) {
+	if client.Err != nil {
+		return nil, client.Err
+	}
+	return client.Credentials, nil
+}
+
+func (client IaaSClientMock) DeleteClientUser() (err error) {
+	return
 }

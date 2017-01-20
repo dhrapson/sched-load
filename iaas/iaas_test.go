@@ -1,12 +1,14 @@
 package iaas_test
 
 import (
+	"io/ioutil"
+	"log"
+	"os"
+
 	. "github.com/dhrapson/sched-load/iaas"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"io/ioutil"
-	"os"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
@@ -14,12 +16,16 @@ var (
 	accessKeyId     string
 	secretAccessKey string
 	region          string
+	uniqueId        string
 )
 
 func setEnv() {
 	os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
 	region = "eu-west-1"
+	if uniqueId == "" {
+		uniqueId = uuid.NewV4().String()
+	}
 }
 
 func unsetEnv() {
@@ -37,7 +43,7 @@ var _ = Describe("The IaaS Client", func() {
 	})
 
 	JustBeforeEach(func() {
-		client = AwsClient{IntegratorId: "test-integrator", ClientId: "test-client-cli", Region: region}
+		client = AwsClient{IntegratorId: "myintegrator", ClientId: "myclient", Region: region}
 	})
 
 	Describe("Interacting with AWS", func() {
@@ -49,6 +55,35 @@ var _ = Describe("The IaaS Client", func() {
 			status         bool
 			err            error
 		)
+
+		Describe("managing client users", func() {
+
+			BeforeEach(func() {
+				setEnv()
+
+			})
+
+			AfterEach(func() {
+				unsetEnv()
+			})
+
+			JustBeforeEach(func() {
+				client = AwsClient{IntegratorId: "myintegrator", ClientId: uniqueId, Region: region}
+			})
+
+			It("connects correctly & creates the user", func() {
+				credentials, err := client.CreateClientUser()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(credentials["AccessKeyId"]).ShouldNot(BeNil())
+				Ω(credentials["SecretAccessKey"]).ShouldNot(BeNil())
+			})
+
+			It("deletes the user", func() {
+				err := client.DeleteClientUser()
+				Ω(err).ShouldNot(HaveOccurred())
+				log.Println("DELETED!")
+			})
+		})
 
 		Describe("managing files", func() {
 			var (

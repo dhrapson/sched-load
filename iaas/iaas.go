@@ -1,6 +1,7 @@
 package iaas
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -21,6 +22,8 @@ type IaaSClient interface {
 	AddFileUploadNotification() (wasNewConfiguration bool, err error)
 	FileUploadNotification() (isSet bool, err error)
 	RemoveFileUploadNotification() (wasPreExisting bool, err error)
+	CreateClientUser() (credentials map[string]string, err error)
+	DeleteClientUser() (err error)
 }
 
 type AwsClient struct {
@@ -265,6 +268,155 @@ func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedF
 
 	log.Println("Downloaded ", remotePath, "to", file.Name(), "size", numBytes, "bytes")
 
+	return
+}
+
+func (client AwsClient) CreateClientUser() (credentials map[string]string, err error) {
+	err = client.createClientUser()
+	if err != nil {
+		return
+	}
+	credentials, err = client.createClientAccessKey()
+	log.Println("Created client user account for " + client.ClientId + " with access key " + credentials["AccessKeyId"])
+	return
+}
+
+func (client AwsClient) DeleteClientUser() (err error) {
+	keys, err := client.listClientAccessKeys()
+	if err != nil {
+		return
+	}
+	for _, key := range keys {
+		err = client.deleteClientAccessKey(key)
+		if err != nil {
+			return
+		}
+	}
+	err = client.deleteClientUser()
+	return
+}
+
+func (client AwsClient) createClientAccessKey() (credentials map[string]string, err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.CreateAccessKeyInput{
+		UserName: aws.String(client.ClientId),
+	}
+	resp, err := svc.CreateAccessKey(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	credentials = make(map[string]string)
+	credentials["AccessKeyId"] = *resp.AccessKey.AccessKeyId
+	credentials["SecretAccessKey"] = *resp.AccessKey.SecretAccessKey
+	return
+}
+
+func (client AwsClient) listClientAccessKeys() (names []string, err error) {
+	names = []string{}
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.ListAccessKeysInput{
+		UserName: aws.String(client.ClientId),
+	}
+	resp, err := svc.ListAccessKeys(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+	for _, metadata := range resp.AccessKeyMetadata {
+		names = append(names, *metadata.AccessKeyId)
+	}
+
+	return
+}
+
+func (client AwsClient) deleteClientAccessKey(accessKeyId string) (err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.DeleteAccessKeyInput{
+		AccessKeyId: aws.String(accessKeyId),
+		UserName:    aws.String(client.ClientId),
+	}
+
+	_, err = svc.DeleteAccessKey(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+	return
+}
+
+func (client AwsClient) deleteClientUser() (err error) {
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.DeleteUserInput{
+		UserName: aws.String(client.ClientId),
+	}
+	_, err = svc.DeleteUser(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+	}
+	return
+}
+
+func (client AwsClient) createClientUser() (err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.CreateUserInput{
+		UserName: aws.String(client.ClientId), // Required
+		Path:     aws.String("/" + client.IntegratorId + "/"),
+	}
+	_, err = svc.CreateUser(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
 	return
 }
 
