@@ -47,6 +47,66 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
+	Describe("the CreateClientUser operation", func() {
+		var result map[string]string
+		JustBeforeEach(func() {
+			result, err = controller.CreateClientUser()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Credentials: map[string]string{
+					"AccessKeyId":     "abc",
+					"SecretAccessKey": "123",
+				}}
+			})
+
+			It("indicates that the account was created", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result["AccessKeyId"]).Should(Equal("abc"))
+				Ω(result["SecretAccessKey"]).Should(Equal("123"))
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+				Ω(result).Should(BeNil())
+			})
+		})
+	})
+
+	Describe("the CreateClientUser operation", func() {
+
+		JustBeforeEach(func() {
+			err = controller.DeleteClientUser()
+		})
+
+		Context("when the IaaS is connecting", func() {
+
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{}
+			})
+
+			It("indicates that the account was deleted", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Context("when the IaaS is not connecting", func() {
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Err: errors.New("InvalidAccessKeyId")}
+			})
+			It("throws an error and returns the right result", func() {
+				Ω(err).Should(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("the ImmediateDataFileCollectionStatus operation", func() {
 		var result bool
 		JustBeforeEach(func() {

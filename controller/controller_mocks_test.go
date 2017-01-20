@@ -66,5 +66,5 @@ func (client IaaSClientMock) CreateClientUser() (credentials map[string]string, 
 }
 
 func (client IaaSClientMock) DeleteClientUser() (err error) {
-	return
+	return client.Err
 }

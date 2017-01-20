@@ -22,6 +22,15 @@ func (controller Controller) Status() (string, error) {
 	return "connected", nil
 }
 
+func (controller Controller) CreateClientUser() (credentials map[string]string, err error) {
+	credentials, err = controller.Client.CreateClientUser()
+	return
+}
+
+func (controller Controller) DeleteClientUser() (err error) {
+	err = controller.Client.DeleteClientUser()
+	return
+}
 func (controller Controller) ListDataFiles() (result []string, err error) {
 
 	var fileNames []string
