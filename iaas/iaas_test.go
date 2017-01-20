@@ -17,6 +17,8 @@ var (
 	secretAccessKey string
 	region          string
 	uniqueId        string
+	integratorName  string
+	clientName      string
 )
 
 func setEnv() {
@@ -40,10 +42,22 @@ var _ = Describe("The IaaS Client", func() {
 		secretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
 		Ω(accessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
 		Ω(secretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
+
+		if os.Getenv("INTEGRATOR") != "" {
+			integratorName = os.Getenv("INTEGRATOR")
+		} else {
+			integratorName = "myintegrator"
+		}
+
+		if os.Getenv("CLIENT") != "" {
+			clientName = os.Getenv("CLIENT")
+		} else {
+			clientName = "myclient"
+		}
 	})
 
 	JustBeforeEach(func() {
-		client = AwsClient{IntegratorId: "myintegrator", ClientId: "myclient", Region: region}
+		client = AwsClient{IntegratorId: integratorName, ClientId: clientName, Region: region}
 	})
 
 	Describe("Interacting with AWS", func() {
@@ -68,7 +82,7 @@ var _ = Describe("The IaaS Client", func() {
 			})
 
 			JustBeforeEach(func() {
-				client = AwsClient{IntegratorId: "myintegrator", ClientId: uniqueId, Region: region}
+				client = AwsClient{IntegratorId: integratorName, ClientId: uniqueId, Region: region}
 			})
 
 			It("connects correctly & creates the user", func() {
