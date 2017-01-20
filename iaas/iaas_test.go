@@ -2,7 +2,6 @@ package iaas_test
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 
 	. "github.com/dhrapson/sched-load/iaas"
@@ -95,7 +94,6 @@ var _ = Describe("The IaaS Client", func() {
 			It("deletes the user", func() {
 				err := client.DeleteClientUser()
 				Ω(err).ShouldNot(HaveOccurred())
-				log.Println("DELETED!")
 			})
 		})
 
