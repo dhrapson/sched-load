@@ -22,13 +22,13 @@ func (controller Controller) Status() (string, error) {
 	return "connected", nil
 }
 
-func (controller Controller) CreateClientUser() (credentials map[string]string, err error) {
+func (controller Controller) CreateClientUser() (credentials iaas.IaaSCredentials, err error) {
 	credentials, err = controller.Client.CreateClientUser()
 	return
 }
 
-func (controller Controller) DeleteClientUser() (err error) {
-	err = controller.Client.DeleteClientUser()
+func (controller Controller) DeleteClientUser(force bool) (wasPreExisting bool, err error) {
+	wasPreExisting, err = controller.Client.DeleteClientUser(force)
 	return
 }
 func (controller Controller) ListDataFiles() (result []string, err error) {

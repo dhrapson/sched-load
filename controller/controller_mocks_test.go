@@ -1,7 +1,9 @@
 package controller_test
 
+import "github.com/dhrapson/sched-load/iaas"
+
 type IaaSClientMock struct {
-	Credentials map[string]string
+	Credentials iaas.IaaSCredentials
 	FilesList   []string
 	FileName    string
 	FilePath    string
@@ -58,13 +60,16 @@ func (client IaaSClientMock) RemoveFileUploadNotification() (wasPreExisting bool
 	return client.Success, nil
 }
 
-func (client IaaSClientMock) CreateClientUser() (credentials map[string]string, err error) {
+func (client IaaSClientMock) CreateClientUser() (credentials iaas.IaaSCredentials, err error) {
 	if client.Err != nil {
 		return nil, client.Err
 	}
 	return client.Credentials, nil
 }
 
-func (client IaaSClientMock) DeleteClientUser() (err error) {
-	return client.Err
+func (client IaaSClientMock) DeleteClientUser(force bool) (wasPreExisting bool, err error) {
+	if client.Err != nil {
+		return false, client.Err
+	}
+	return client.Success, nil
 }

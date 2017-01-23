@@ -48,7 +48,7 @@ var _ = Describe("The controller", func() {
 	})
 
 	Describe("the CreateClientUser operation", func() {
-		var result map[string]string
+		var result iaas.IaaSCredentials
 		JustBeforeEach(func() {
 			result, err = controller.CreateClientUser()
 		})
@@ -56,16 +56,17 @@ var _ = Describe("The controller", func() {
 		Context("when the IaaS is connecting", func() {
 
 			BeforeEach(func() {
-				iaasClient = IaaSClientMock{Credentials: map[string]string{
-					"AccessKeyId":     "abc",
-					"SecretAccessKey": "123",
-				}}
+				iaasClient = IaaSClientMock{
+					Credentials: iaas.AwsCredentials{
+						AccessKeyId:     "abc",
+						SecretAccessKey: "123",
+					},
+				}
 			})
 
 			It("indicates that the account was created", func() {
 				Ω(err).ShouldNot(HaveOccurred())
-				Ω(result["AccessKeyId"]).Should(Equal("abc"))
-				Ω(result["SecretAccessKey"]).Should(Equal("123"))
+				Ω(result.String()).Should(Equal("AccessKeyId: abc, SecretAccessKey: 123"))
 			})
 		})
 

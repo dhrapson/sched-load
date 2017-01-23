@@ -14,6 +14,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
+type IaaSCredentials interface {
+	String() string
+}
+
 type IaaSClient interface {
 	DeleteFile(remotePath string) (wasPreExisting bool, err error)
 	GetFile(remotePath string, localDir string) (downloadedFilePath string, err error)
@@ -22,8 +26,8 @@ type IaaSClient interface {
 	AddFileUploadNotification() (wasNewConfiguration bool, err error)
 	FileUploadNotification() (isSet bool, err error)
 	RemoveFileUploadNotification() (wasPreExisting bool, err error)
-	CreateClientUser() (credentials map[string]string, err error)
-	DeleteClientUser() (err error)
+	CreateClientUser() (credentials IaaSCredentials, err error)
+	DeleteClientUser(force bool) (wasPreExisting bool, err error)
 }
 
 type AwsClient struct {
@@ -31,6 +35,15 @@ type AwsClient struct {
 	session      *session.Session
 	IntegratorId string
 	ClientId     string
+}
+
+type AwsCredentials struct {
+	AccessKeyId     string
+	SecretAccessKey string
+}
+
+func (creds AwsCredentials) String() (output string) {
+	return "AccessKeyId: " + creds.AccessKeyId + ", SecretAccessKey: " + creds.SecretAccessKey
 }
 
 func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err error) {
@@ -271,32 +284,88 @@ func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedF
 	return
 }
 
-func (client AwsClient) CreateClientUser() (credentials map[string]string, err error) {
+func (client AwsClient) CreateClientUser() (credentials IaaSCredentials, err error) {
 	err = client.createClientUser()
 	if err != nil {
 		return
 	}
 	credentials, err = client.createClientAccessKey()
-	log.Println("Created client user account for " + client.ClientId + " with access key " + credentials["AccessKeyId"])
+	log.Println("Created client user account for " + client.ClientId + " with credentials " + credentials.String())
 	return
 }
 
-func (client AwsClient) DeleteClientUser() (err error) {
+func (client AwsClient) DeleteClientUser(force bool) (wasPreExisting bool, err error) {
+
+	wasPreExisting, err = client.clientUserExists()
+	if err != nil {
+		return
+	}
+
+	if force {
+		var files []string
+		files, err = client.ListFiles()
+		if err != nil {
+			return
+		}
+		for _, file := range files {
+			_, err = client.DeleteFile(file)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	if !wasPreExisting {
+		return
+	}
+
 	keys, err := client.listClientAccessKeys()
 	if err != nil {
 		return
 	}
+
 	for _, key := range keys {
 		err = client.deleteClientAccessKey(key)
 		if err != nil {
 			return
 		}
 	}
+
 	err = client.deleteClientUser()
+	if err != nil {
+		return
+	}
+
 	return
 }
 
-func (client AwsClient) createClientAccessKey() (credentials map[string]string, err error) {
+func (client AwsClient) clientUserExists() (exists bool, err error) {
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.GetUserInput{
+		UserName: aws.String(client.ClientId),
+	}
+
+	_, err = svc.GetUser(params)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "AccessDenied") {
+			err = nil
+		} else {
+			log.Println(err)
+		}
+		return
+	}
+	exists = true
+	return
+}
+
+func (client AwsClient) createClientAccessKey() (credentials AwsCredentials, err error) {
 
 	session, err := client.connect()
 	if err != nil {
@@ -317,9 +386,8 @@ func (client AwsClient) createClientAccessKey() (credentials map[string]string, 
 		return
 	}
 
-	credentials = make(map[string]string)
-	credentials["AccessKeyId"] = *resp.AccessKey.AccessKeyId
-	credentials["SecretAccessKey"] = *resp.AccessKey.SecretAccessKey
+	credentials = AwsCredentials{AccessKeyId: *resp.AccessKey.AccessKeyId,
+		SecretAccessKey: *resp.AccessKey.SecretAccessKey}
 	return
 }
 

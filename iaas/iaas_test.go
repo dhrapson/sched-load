@@ -84,16 +84,40 @@ var _ = Describe("The IaaS Client", func() {
 				client = AwsClient{IntegratorId: integratorName, ClientId: uniqueId, Region: region}
 			})
 
-			It("connects correctly & creates the user", func() {
-				credentials, err := client.CreateClientUser()
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(credentials["AccessKeyId"]).ShouldNot(BeNil())
-				Ω(credentials["SecretAccessKey"]).ShouldNot(BeNil())
-			})
+			Context("when managing users", func() {
 
-			It("deletes the user", func() {
-				err := client.DeleteClientUser()
-				Ω(err).ShouldNot(HaveOccurred())
+				It("connects correctly & creates the user", func() {
+					credentials, err := client.CreateClientUser()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(credentials.String()).ShouldNot(BeNil())
+				})
+
+				It("deletes the user leaving files in place", func() {
+					client.UploadFile("fixtures/test-file.csv", "test-file.csv")
+					wasPreExisting, err := client.DeleteClientUser(false)
+					Ω(err).ShouldNot(HaveOccurred())
+					remainingFiles, err := client.ListFiles()
+					Ω(err).ShouldNot(HaveOccurred())
+					found := false
+					for _, file := range remainingFiles {
+						if file == "test-file.csv" {
+							found = true
+							break
+						}
+					}
+					Ω(wasPreExisting).Should(BeTrue())
+					Ω(found).Should(BeTrue())
+				})
+
+				It("deletes the user and all the files", func() {
+					wasPreExisting, err := client.DeleteClientUser(true)
+					Ω(err).ShouldNot(HaveOccurred())
+					remainingFiles, err := client.ListFiles()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(len(remainingFiles)).Should(BeZero())
+					Ω(wasPreExisting).Should(BeFalse())
+				})
+
 			})
 		})
 
