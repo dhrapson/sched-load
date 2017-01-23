@@ -1,7 +1,6 @@
 package iaas
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -388,9 +387,7 @@ func (client AwsClient) createClientAccessKey() (credentials AwsCredentials, err
 	resp, err := svc.CreateAccessKey(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return
 	}
 
@@ -414,9 +411,7 @@ func (client AwsClient) listClientAccessKeys() (names []string, err error) {
 	resp, err := svc.ListAccessKeys(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return
 	}
 	for _, metadata := range resp.AccessKeyMetadata {
@@ -443,9 +438,7 @@ func (client AwsClient) deleteClientAccessKey(accessKeyId string) (err error) {
 	_, err = svc.DeleteAccessKey(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return
 	}
 	return
@@ -465,9 +458,7 @@ func (client AwsClient) deleteClientUser() (err error) {
 	_, err = svc.DeleteUser(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 	return
 }
@@ -488,9 +479,7 @@ func (client AwsClient) createClientUser() (err error) {
 	_, err = svc.CreateUser(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return
 	}
 	return
