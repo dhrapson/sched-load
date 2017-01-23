@@ -296,6 +296,10 @@ func (client AwsClient) CreateClientUser() (credentials IaaSCredentials, err err
 	if err != nil {
 		return
 	}
+	err = client.addClientUserToIntegratorClientGroup()
+	if err != nil {
+		return
+	}
 	credentials, err = client.createClientAccessKey()
 	log.Println("Created client user account for " + client.ClientId + " with credentials " + credentials.String())
 	return
@@ -326,6 +330,16 @@ func (client AwsClient) DeleteClientUser(force bool) (wasPreExisting bool, err e
 		return
 	}
 
+	wasInGroup, err := client.isClientUserInIntegratorClientGroup()
+	if err != nil {
+		return
+	}
+	if wasInGroup {
+		err = client.removeClientUserFromIntegratorClientGroup()
+		if err != nil {
+			return
+		}
+	}
 	keys, err := client.listClientAccessKeys()
 	if err != nil {
 		return
@@ -369,6 +383,82 @@ func (client AwsClient) clientUserExists() (exists bool, err error) {
 		return
 	}
 	exists = true
+	return
+}
+
+func (client AwsClient) addClientUserToIntegratorClientGroup() (err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.AddUserToGroupInput{
+		GroupName: aws.String(client.integratorClientGroupName()), // Required
+		UserName:  aws.String(client.ClientId),                    // Required
+	}
+	_, err = svc.AddUserToGroup(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	return
+}
+
+func (client AwsClient) isClientUserInIntegratorClientGroup() (isGroupMember bool, err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.ListGroupsForUserInput{
+		UserName: aws.String(client.ClientId), // Required
+	}
+	resp, err := svc.ListGroupsForUser(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	for _, iamGroup := range resp.Groups {
+		if *iamGroup.GroupName == client.integratorClientGroupName() {
+			return true, nil
+		}
+	}
+	return
+}
+
+func (client AwsClient) integratorClientGroupName() string {
+	return client.IntegratorId + "-client"
+}
+func (client AwsClient) removeClientUserFromIntegratorClientGroup() (err error) {
+
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.RemoveUserFromGroupInput{
+		GroupName: aws.String(client.integratorClientGroupName()), // Required
+		UserName:  aws.String(client.ClientId),                    // Required
+	}
+	_, err = svc.RemoveUserFromGroup(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
 	return
 }
 
