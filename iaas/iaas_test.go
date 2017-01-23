@@ -3,6 +3,7 @@ package iaas_test
 import (
 	"io/ioutil"
 	"os"
+	"time"
 
 	. "github.com/dhrapson/sched-load/iaas"
 	. "github.com/onsi/ginkgo"
@@ -11,22 +12,25 @@ import (
 )
 
 var (
-	client          IaaSClient
-	accessKeyId     string
-	secretAccessKey string
-	region          string
-	uniqueId        string
-	integratorName  string
-	clientName      string
+	client                    IaaSClient
+	integratorAccessKeyId     string
+	integratorSecretAccessKey string
+	region                    string
+	uniqueId                  string
+	integratorName            string
+	clientName                string
+	clientCreds               IaaSCredentials
+	err                       error
 )
 
-func setEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
-	region = "eu-west-1"
-	if uniqueId == "" {
-		uniqueId = uuid.NewV4().String()
-	}
+func setIntegratorEnv() {
+	os.Setenv("AWS_ACCESS_KEY_ID", integratorAccessKeyId)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", integratorSecretAccessKey)
+}
+
+func setClientEnv() {
+	os.Setenv("AWS_ACCESS_KEY_ID", clientCreds.Map()["AccessKeyId"])
+	os.Setenv("AWS_SECRET_ACCESS_KEY", clientCreds.Map()["SecretAccessKey"])
 }
 
 func unsetEnv() {
@@ -34,29 +38,43 @@ func unsetEnv() {
 	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
 }
 
+func waitForAws() {
+	// AWS takes time to store settings
+	time.Sleep(15 * time.Second)
+}
+
 var _ = Describe("The IaaS Client", func() {
 
 	BeforeSuite(func() {
-		accessKeyId = os.Getenv("TEST_AWS_ACCESS_KEY_ID")
-		secretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
-		Ω(accessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
-		Ω(secretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
+		integratorAccessKeyId = os.Getenv("TEST_AWS_ACCESS_KEY_ID")
+		integratorSecretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
+		Ω(integratorAccessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
+		Ω(integratorSecretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
 
 		if os.Getenv("INTEGRATOR") != "" {
 			integratorName = os.Getenv("INTEGRATOR")
 		} else {
 			integratorName = "myintegrator"
 		}
+		region = "eu-west-1"
 
-		if os.Getenv("CLIENT") != "" {
-			clientName = os.Getenv("CLIENT")
-		} else {
-			clientName = "myclient"
-		}
+		uniqueId = uuid.NewV4().String()
+		clientName = uuid.NewV4().String()
+
+		client := AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
+		setIntegratorEnv()
+		clientCreds, err = client.CreateClientUser()
+		waitForAws()
+		Ω(err).ShouldNot(HaveOccurred())
+		unsetEnv()
 	})
 
-	JustBeforeEach(func() {
-		client = AwsClient{IntegratorId: integratorName, ClientId: clientName, Region: region}
+	AfterSuite(func() {
+		setIntegratorEnv()
+		client = AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
+		_, err = client.DeleteClientUser(true)
+		Ω(err).ShouldNot(HaveOccurred())
+		unsetEnv()
 	})
 
 	Describe("Interacting with AWS", func() {
@@ -66,14 +84,12 @@ var _ = Describe("The IaaS Client", func() {
 			localFilePath  string
 			remoteFilePath string
 			status         bool
-			err            error
 		)
 
-		Describe("managing client users", func() {
+		Describe("the integrator-level operations", func() {
 
 			BeforeEach(func() {
-				setEnv()
-
+				setIntegratorEnv()
 			})
 
 			AfterEach(func() {
@@ -117,152 +133,158 @@ var _ = Describe("The IaaS Client", func() {
 					Ω(len(remainingFiles)).Should(BeZero())
 					Ω(wasPreExisting).Should(BeFalse())
 				})
-
 			})
 		})
 
-		Describe("managing files", func() {
-			var (
-				tempDir string
-			)
+		Describe("the client-level operations", func() {
 
-			Context("managing bucket notifications", func() {
-				BeforeEach(func() {
-					setEnv()
-				})
-
-				AfterEach(func() {
-					unsetEnv()
-				})
-
-				It("connects correctly & add the notification", func() {
-					_, err = client.RemoveFileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-
-					status, err = client.AddFileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeTrue())
-				})
-
-				It("finds the added notification", func() {
-					status, err = client.FileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeTrue())
-
-					status, err = client.AddFileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeFalse())
-				})
-
-				It("removes the added notification", func() {
-					status, err = client.RemoveFileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeTrue())
-				})
-
-				It("does not find the removed notification", func() {
-					status, err = client.FileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeFalse())
-
-					status, err = client.RemoveFileUploadNotification()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeFalse())
-				})
+			JustBeforeEach(func() {
+				client = AwsClient{IntegratorId: integratorName, ClientId: clientName, Region: region}
 			})
 
-			Context("managing files with valid connection details", func() {
-				BeforeEach(func() {
-					setEnv()
-					tempDir, err = ioutil.TempDir("", "iaas-uploading-files")
-					Ω(err).ShouldNot(HaveOccurred())
-				})
+			Describe("managing files", func() {
+				var (
+					tempDir string
+				)
 
-				AfterEach(func() {
-					unsetEnv()
-				})
-
-				It("connects correctly & uploads the file", func() {
-					remoteFilePath, err = client.UploadFile("fixtures/test-file.csv", "someother-file.csv")
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(remoteFilePath).Should(Equal("someother-file.csv"))
-
-				})
-
-				It("finds the file it just uploaded", func() {
-					result, err = client.ListFiles()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(result).Should(ContainElement("someother-file.csv"))
-				})
-
-				It("downloads the file and the contents match", func() {
-					localFilePath, err := client.GetFile(remoteFilePath, tempDir)
-					Ω(err).ShouldNot(HaveOccurred())
-					contents, err := ioutil.ReadFile(localFilePath)
-					Ω(err).ShouldNot(HaveOccurred())
-					expectedContents, err := ioutil.ReadFile("fixtures/test-file.csv")
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(contents).Should(Equal(expectedContents))
-				})
-
-				It("deletes the file it just uploaded", func() {
-					status, err = client.DeleteFile("someother-file.csv")
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeTrue())
-				})
-
-				It("can see that the file is gone", func() {
-					result, err = client.ListFiles()
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(result).ShouldNot(ContainElement("someother-file.csv"))
-				})
-
-				It("returns false when deleting a non-existant files", func() {
-					status, err = client.DeleteFile("someother-file.csv")
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(status).Should(BeFalse())
-				})
-			})
-
-			Context("with invalid connection details", func() {
-				BeforeEach(func() {
-					unsetEnv()
-				})
-
-				Context("when listing files", func() {
+				Context("managing bucket notifications", func() {
 					BeforeEach(func() {
-						result, err = client.ListFiles()
+						setClientEnv()
 					})
-					It("throws an error", func() {
-						Ω(err).Should(HaveOccurred())
+
+					AfterEach(func() {
+						unsetEnv()
+					})
+
+					It("connects correctly & add the notification", func() {
+						_, err = client.RemoveFileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+
+						status, err = client.AddFileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeTrue())
+					})
+
+					It("finds the added notification", func() {
+						status, err = client.FileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeTrue())
+
+						status, err = client.AddFileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeFalse())
+					})
+
+					It("removes the added notification", func() {
+						status, err = client.RemoveFileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeTrue())
+					})
+
+					It("does not find the removed notification", func() {
+						status, err = client.FileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeFalse())
+
+						status, err = client.RemoveFileUploadNotification()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeFalse())
 					})
 				})
 
-				Context("when deleting a file", func() {
+				Context("managing files with valid connection details", func() {
 					BeforeEach(func() {
-						status, err = client.DeleteFile("doesntmatter")
-					})
-					It("throws an error", func() {
-						Ω(err).Should(HaveOccurred())
-					})
-				})
-
-				Context("when uploading a file", func() {
-					BeforeEach(func() {
-						remoteFilePath, err = client.UploadFile("doesntmatter", "doesntmatter")
-					})
-					It("throws an error", func() {
-						Ω(err).Should(HaveOccurred())
-					})
-				})
-
-				Context("when downloading a file", func() {
-					BeforeEach(func() {
+						setClientEnv()
 						tempDir, err = ioutil.TempDir("", "iaas-uploading-files")
-						localFilePath, err = client.GetFile("doesntmatter", tempDir)
+						Ω(err).ShouldNot(HaveOccurred())
 					})
-					It("throws an error", func() {
-						Ω(err).Should(HaveOccurred())
+
+					AfterEach(func() {
+						unsetEnv()
+					})
+
+					It("connects correctly & uploads the file", func() {
+						remoteFilePath, err = client.UploadFile("fixtures/test-file.csv", "someother-file.csv")
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(remoteFilePath).Should(Equal("someother-file.csv"))
+
+					})
+
+					It("finds the file it just uploaded", func() {
+						result, err = client.ListFiles()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(result).Should(ContainElement("someother-file.csv"))
+					})
+
+					It("downloads the file and the contents match", func() {
+						localFilePath, err := client.GetFile(remoteFilePath, tempDir)
+						Ω(err).ShouldNot(HaveOccurred())
+						contents, err := ioutil.ReadFile(localFilePath)
+						Ω(err).ShouldNot(HaveOccurred())
+						expectedContents, err := ioutil.ReadFile("fixtures/test-file.csv")
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(contents).Should(Equal(expectedContents))
+					})
+
+					It("deletes the file it just uploaded", func() {
+						status, err = client.DeleteFile("someother-file.csv")
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeTrue())
+					})
+
+					It("can see that the file is gone", func() {
+						result, err = client.ListFiles()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(result).ShouldNot(ContainElement("someother-file.csv"))
+					})
+
+					It("returns false when deleting a non-existant files", func() {
+						status, err = client.DeleteFile("someother-file.csv")
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(status).Should(BeFalse())
+					})
+				})
+
+				Context("with invalid connection details", func() {
+					BeforeEach(func() {
+						unsetEnv()
+					})
+
+					Context("when listing files", func() {
+						BeforeEach(func() {
+							result, err = client.ListFiles()
+						})
+						It("throws an error", func() {
+							Ω(err).Should(HaveOccurred())
+						})
+					})
+
+					Context("when deleting a file", func() {
+						BeforeEach(func() {
+							status, err = client.DeleteFile("doesntmatter")
+						})
+						It("throws an error", func() {
+							Ω(err).Should(HaveOccurred())
+						})
+					})
+
+					Context("when uploading a file", func() {
+						BeforeEach(func() {
+							remoteFilePath, err = client.UploadFile("doesntmatter", "doesntmatter")
+						})
+						It("throws an error", func() {
+							Ω(err).Should(HaveOccurred())
+						})
+					})
+
+					Context("when downloading a file", func() {
+						BeforeEach(func() {
+							tempDir, err = ioutil.TempDir("", "iaas-uploading-files")
+							localFilePath, err = client.GetFile("doesntmatter", tempDir)
+						})
+						It("throws an error", func() {
+							Ω(err).Should(HaveOccurred())
+						})
 					})
 				})
 			})
