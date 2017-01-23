@@ -16,6 +16,7 @@ import (
 
 type IaaSCredentials interface {
 	String() string
+	Map() map[string]string
 }
 
 type IaaSClient interface {
@@ -44,6 +45,13 @@ type AwsCredentials struct {
 
 func (creds AwsCredentials) String() (output string) {
 	return "AccessKeyId: " + creds.AccessKeyId + ", SecretAccessKey: " + creds.SecretAccessKey
+}
+
+func (creds AwsCredentials) Map() map[string]string {
+	m := make(map[string]string)
+	m["AccessKeyId"] = creds.AccessKeyId
+	m["SecretAccessKey"] = creds.SecretAccessKey
+	return m
 }
 
 func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err error) {

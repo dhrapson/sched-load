@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/dhrapson/sched-load/controller"
+	"github.com/dhrapson/sched-load/iaas"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -14,27 +16,32 @@ import (
 )
 
 var (
-	cliPath           string
-	session           *Session
-	err               error
-	args              []string
-	accessKeyId       string
-	secretAccessKey   string
-	region            string
-	dateFormatRegex   string
-	blockingProxyPath string
-	openProxyPath     string
-	proxyCommand      *exec.Cmd
-	expectedExitCode  int
-	integratorName    string
-	clientName        string
-	uniqueId          string
+	cliPath                   string
+	session                   *Session
+	err                       error
+	args                      []string
+	integratorAccessKeyId     string
+	integratorSecretAccessKey string
+	region                    string
+	dateFormatRegex           string
+	blockingProxyPath         string
+	openProxyPath             string
+	proxyCommand              *exec.Cmd
+	expectedExitCode          int
+	integratorName            string
+	clientName                string
+	uniqueId                  string
+	clientCreds               iaas.IaaSCredentials
 )
 
-func setEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", accessKeyId)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", secretAccessKey)
-	region = "eu-west-1"
+func setIntegratorEnv() {
+	os.Setenv("AWS_ACCESS_KEY_ID", integratorAccessKeyId)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", integratorSecretAccessKey)
+}
+
+func setClientEnv() {
+	os.Setenv("AWS_ACCESS_KEY_ID", clientCreds.Map()["AccessKeyId"])
+	os.Setenv("AWS_SECRET_ACCESS_KEY", clientCreds.Map()["SecretAccessKey"])
 }
 
 func unsetEnv() {
@@ -71,10 +78,11 @@ var _ = Describe("SchedLoad", func() {
 
 	BeforeSuite(func() {
 
-		accessKeyId = os.Getenv("TEST_AWS_ACCESS_KEY_ID")
-		secretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
-		Ω(accessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
-		Ω(secretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
+		region = "eu-west-1"
+		integratorAccessKeyId = os.Getenv("TEST_AWS_ACCESS_KEY_ID")
+		integratorSecretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
+		Ω(integratorAccessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
+		Ω(integratorSecretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
 		cliPath, err = Build("github.com/dhrapson/sched-load")
 		Ω(err).ShouldNot(HaveOccurred(), "Error building main source")
 		blockingProxyPath, err = Build("github.com/dhrapson/sched-load/fixtures/blockingproxy")
@@ -88,46 +96,38 @@ var _ = Describe("SchedLoad", func() {
 		if os.Getenv("INTEGRATOR") != "" {
 			integratorName = os.Getenv("INTEGRATOR")
 		} else {
-			integratorName = "test-integrator"
-		}
-
-		if os.Getenv("CLIENT") != "" {
-			clientName = os.Getenv("CLIENT")
-		} else {
-			clientName = "test-client-cli"
+			integratorName = "myintegrator"
 		}
 
 		uniqueId = uuid.NewV4().String()
+		clientName = uuid.NewV4().String()
+
+		setIntegratorEnv()
+		iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
+		ctrler := controller.Controller{Client: iaasClient}
+		clientCreds, err = ctrler.CreateClientUser()
+		waitForAws()
+		Ω(err).ShouldNot(HaveOccurred())
+		unsetEnv()
 	})
 
 	AfterSuite(func() {
 		CleanupBuildArtifacts()
 	})
 
-	Describe("invoking correctly", func() {
+	JustBeforeEach(func() {
+		log.Println("running", cliPath, args, "expecting", expectedExitCode)
+		session, err = runCommand(cliPath, expectedExitCode, args...)
+	})
 
+	Describe("invoking integrator operations", func() {
 		BeforeEach(func() {
-			setEnv()
+			setIntegratorEnv()
 			expectedExitCode = 0
 		})
 
 		AfterEach(func() {
 			unsetEnv()
-		})
-
-		JustBeforeEach(func() {
-			log.Println("running", cliPath, args, "expecting", expectedExitCode)
-			session, err = runCommand(cliPath, expectedExitCode, args...)
-		})
-
-		Context("When run with status argument", func() {
-			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
-			})
-
-			It("exits nicely", func() {
-				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
-			})
 		})
 
 		Context("When managing client accounts", func() {
@@ -161,6 +161,28 @@ var _ = Describe("SchedLoad", func() {
 					Ω(session.Err).Should(Say(dateFormatRegex + " " + uniqueId + " account did not exist"))
 					Ω(session.Err).Should(Say(dateFormatRegex + " removed any data files for account " + uniqueId))
 				})
+			})
+		})
+
+	})
+	Describe("invoking client operations", func() {
+
+		BeforeEach(func() {
+			setClientEnv()
+			expectedExitCode = 0
+		})
+
+		AfterEach(func() {
+			unsetEnv()
+		})
+
+		Context("When run with status argument", func() {
+			BeforeEach(func() {
+				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
+			})
+
+			It("exits nicely", func() {
+				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
 			})
 		})
 
@@ -355,7 +377,7 @@ var _ = Describe("SchedLoad", func() {
 
 			BeforeEach(func() {
 				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
-				setEnv()
+				setClientEnv()
 				// NB. use the openproxy port of 56565
 				os.Setenv("HTTP_PROXY", "localhost:56565")
 				proxyCommand = runProxyServer(openProxyPath)
@@ -376,7 +398,7 @@ var _ = Describe("SchedLoad", func() {
 
 			BeforeEach(func() {
 				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
-				setEnv()
+				setClientEnv()
 				// NB. use the openproxy port of 56565
 				os.Setenv("HTTP_PROXY", "localhost:56565")
 				proxyCommand = runProxyServer(blockingProxyPath)
@@ -422,7 +444,7 @@ var _ = Describe("SchedLoad", func() {
 
 				BeforeEach(func() {
 					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
-					setEnv()
+					setClientEnv()
 					// NB. Attempt to choose a port that is not otherwise in use
 					os.Setenv("HTTP_PROXY", "localhost:45532")
 				})
