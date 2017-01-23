@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
@@ -27,6 +28,7 @@ var (
 	expectedExitCode  int
 	integratorName    string
 	clientName        string
+	uniqueId          string
 )
 
 func setEnv() {
@@ -94,6 +96,8 @@ var _ = Describe("SchedLoad", func() {
 		} else {
 			clientName = "test-client-cli"
 		}
+
+		uniqueId = uuid.NewV4().String()
 	})
 
 	AfterSuite(func() {
@@ -123,6 +127,40 @@ var _ = Describe("SchedLoad", func() {
 
 			It("exits nicely", func() {
 				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
+			})
+		})
+
+		Context("When managing client accounts", func() {
+			Context("When creating", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", integratorName, "--client", uniqueId, "client", "create"}
+				})
+
+				It("says the right thing and exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " created account " + uniqueId))
+					Ω(session.Err).Should(Say(dateFormatRegex + " Credentials are"))
+				})
+			})
+
+			Context("When deleting", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", integratorName, "--client", uniqueId, "client", "delete"}
+				})
+
+				It("says the right thing and exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " deleted account " + uniqueId))
+				})
+			})
+
+			Context("When deleting forcefully", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--integrator", integratorName, "--client", uniqueId, "client", "delete", "-f"}
+				})
+
+				It("says the right thing and exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " " + uniqueId + " account did not exist"))
+					Ω(session.Err).Should(Say(dateFormatRegex + " removed any data files for account " + uniqueId))
+				})
 			})
 		})
 

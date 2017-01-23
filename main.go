@@ -16,6 +16,7 @@ func main() {
 	var integratorId string
 	var clientId string
 	var filePath string
+	var force bool
 
 	app.Name = "sched-load"
 	app.Usage = "uploads files to public IaaS & publishes a schedule for regular file uploads"
@@ -54,6 +55,68 @@ func main() {
 					log.Println(status)
 				}
 				return nil
+			},
+		},
+		{
+			Name:    "client",
+			Aliases: []string{"c"},
+			Usage:   "manage client accounts",
+			Subcommands: []cli.Command{
+				{
+					Name:    "delete",
+					Aliases: []string{"d"},
+					Usage:   "remove a client account, optionally also remove all the uploaded data files",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:        "force, f",
+							Usage:       "force deletion of the user accounts uploaded files",
+							Destination: &force,
+						},
+					},
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						wasPreExisting, err := controller.DeleteClientUser(force)
+						if err != nil {
+							log.Fatalf("Error deleting client account, %s\n", err.Error())
+						}
+						if wasPreExisting {
+							if force {
+								log.Printf("deleted account %s, left data files in place\n", clientId)
+							} else {
+								log.Printf("deleted account %s & all data files\n", clientId)
+							}
+						} else {
+							log.Printf("%s account did not exist\n", clientId)
+							if force {
+								log.Printf("removed any data files for account %s\n", clientId)
+							}
+						}
+						return nil
+					},
+				},
+				{
+					Name:    "create",
+					Aliases: []string{"add"},
+					Usage:   "create a client account",
+					Action: func(c *cli.Context) error {
+
+						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						controller := controller.Controller{Client: iaasClient}
+
+						creds, err := controller.CreateClientUser()
+						if err != nil {
+							log.Fatalf("Error creating client user %s, %s\n", clientId, err.Error())
+						}
+
+						log.Printf("created account %s\n", clientId)
+						log.Printf("Credentials are %s\n", creds.String())
+
+						return nil
+					},
+				},
 			},
 		},
 		{
