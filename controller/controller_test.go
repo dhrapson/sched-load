@@ -81,20 +81,49 @@ var _ = Describe("The controller", func() {
 		})
 	})
 
-	Describe("the CreateClientUser operation", func() {
+	Describe("the DeleteClientUser operation", func() {
+		var force bool
+		var result bool
 
 		JustBeforeEach(func() {
-			err = controller.DeleteClientUser()
+			force = false
+			result, err = controller.DeleteClientUser(force)
 		})
 
-		Context("when the IaaS is connecting", func() {
+		Context("when deleting an existing account", func() {
 
 			BeforeEach(func() {
-				iaasClient = IaaSClientMock{}
+				iaasClient = IaaSClientMock{Success: true}
 			})
 
 			It("indicates that the account was deleted", func() {
 				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result).Should(BeTrue())
+			})
+		})
+
+		Context("when deleting a non-existant account", func() {
+
+			BeforeEach(func() {
+				iaasClient = IaaSClientMock{Success: false}
+			})
+
+			It("indicates that the account was deleted", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result).Should(BeFalse())
+			})
+		})
+
+		Context("when deleting with force", func() {
+
+			BeforeEach(func() {
+				force = true
+				iaasClient = IaaSClientMock{Success: true}
+			})
+
+			It("indicates that the account was deleted", func() {
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(result).Should(BeTrue())
 			})
 		})
 
