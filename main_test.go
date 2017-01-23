@@ -32,6 +32,7 @@ var (
 	clientName                string
 	uniqueId                  string
 	clientCreds               iaas.IaaSCredentials
+	ctrler                    controller.Controller
 )
 
 func setIntegratorEnv() {
@@ -102,9 +103,9 @@ var _ = Describe("SchedLoad", func() {
 		uniqueId = uuid.NewV4().String()
 		clientName = uuid.NewV4().String()
 
-		setIntegratorEnv()
 		iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
-		ctrler := controller.Controller{Client: iaasClient}
+		ctrler = controller.Controller{Client: iaasClient}
+		setIntegratorEnv()
 		clientCreds, err = ctrler.CreateClientUser()
 		waitForAws()
 		Ω(err).ShouldNot(HaveOccurred())
@@ -113,6 +114,10 @@ var _ = Describe("SchedLoad", func() {
 
 	AfterSuite(func() {
 		CleanupBuildArtifacts()
+		setIntegratorEnv()
+		_, err = ctrler.DeleteClientUser(true)
+		Ω(err).ShouldNot(HaveOccurred())
+		unsetEnv()
 	})
 
 	JustBeforeEach(func() {
