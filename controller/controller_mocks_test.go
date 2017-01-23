@@ -3,12 +3,13 @@ package controller_test
 import "github.com/dhrapson/sched-load/iaas"
 
 type IaaSClientMock struct {
-	Credentials iaas.IaaSCredentials
-	FilesList   []string
-	FileName    string
-	FilePath    string
-	Success     bool
-	Err         error
+	Credentials   iaas.IaaSCredentials
+	AccountDetail iaas.IaaSAccountDetails
+	FilesList     []string
+	FileName      string
+	FilePath      string
+	Success       bool
+	Err           error
 }
 
 func (client IaaSClientMock) ListFiles() (names []string, err error) {
@@ -72,4 +73,11 @@ func (client IaaSClientMock) DeleteClientUser(force bool) (wasPreExisting bool, 
 		return false, client.Err
 	}
 	return client.Success, nil
+}
+
+func (client IaaSClientMock) AccountDetails() (details iaas.IaaSAccountDetails, err error) {
+	if client.Err != nil {
+		return nil, client.Err
+	}
+	return client.AccountDetail, nil
 }

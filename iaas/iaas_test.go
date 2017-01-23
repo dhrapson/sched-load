@@ -100,6 +100,15 @@ var _ = Describe("The IaaS Client", func() {
 				client = AwsClient{IntegratorId: integratorName, ClientId: uniqueId, Region: region}
 			})
 
+			Context("when getting account status", func() {
+				It("connects correctly & creates the user", func() {
+					details, err := client.AccountDetails()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(details["AccountId"]).Should(Equal("609701658665"))
+					Ω(details["IntegratorId"]).Should(Equal(integratorName))
+				})
+			})
+
 			Context("when managing users", func() {
 
 				It("connects correctly & creates the user", func() {

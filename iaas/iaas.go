@@ -1,6 +1,7 @@
 package iaas
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path"
@@ -12,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
+
+type IaaSAccountDetails map[string]string
 
 type IaaSCredentials interface {
 	String() string
@@ -28,6 +31,7 @@ type IaaSClient interface {
 	RemoveFileUploadNotification() (wasPreExisting bool, err error)
 	CreateClientUser() (credentials IaaSCredentials, err error)
 	DeleteClientUser(force bool) (wasPreExisting bool, err error)
+	AccountDetails() (details IaaSAccountDetails, err error)
 }
 
 type AwsClient struct {
@@ -122,13 +126,14 @@ func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, e
 		}
 	}
 	wasNewConfiguration = true
-	accountId, err := client.getAccountId()
+	accountDetails, err := client.AccountDetails()
+	accountID := accountDetails["AccountId"]
 
 	thisConfig := &s3.TopicConfiguration{
 		Events: []*string{
 			aws.String("s3:ObjectCreated:*"),
 		},
-		TopicArn: aws.String("arn:aws:sns:" + client.Region + ":" + accountId + ":S3NotifierTopic"),
+		TopicArn: aws.String("arn:aws:sns:" + client.Region + ":" + accountID + ":S3NotifierTopic"),
 		Filter: &s3.NotificationConfigurationFilter{
 			Key: &s3.KeyFilter{
 				FilterRules: []*s3.FilterRule{
@@ -355,6 +360,45 @@ func (client AwsClient) DeleteClientUser(force bool) (wasPreExisting bool, err e
 	err = client.deleteClientUser()
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func (client AwsClient) AccountDetails() (details IaaSAccountDetails, err error) {
+
+	details = map[string]string{}
+	session, err := client.connect()
+	if err != nil {
+		return
+	}
+
+	svc := iam.New(session)
+
+	params := &iam.GetUserInput{}
+	resp, err := svc.GetUser(params)
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	userArn := *resp.User.Arn
+	// ARNs look like arn:aws:iam::ACCOUNTID:user/USERID
+	// Note the double colon after iam, which makes account ID element 4 rather than 3
+	details["AccountId"] = strings.Split(userArn, ":")[4]
+
+	userPath := strings.Split(userArn, ":")[5]
+	pathParts := strings.Split(userPath, "/")
+
+	if len(pathParts) > 3 || pathParts[0] != "user" {
+		return nil, errors.New("Unexpected user path: " + userPath)
+	}
+	if pathParts[1] == "integrator" {
+		details["IntegratorId"] = pathParts[2]
+	} else {
+		details["IntegratorId"] = pathParts[1]
+		details["ClientId"] = pathParts[2]
 	}
 
 	return
@@ -617,30 +661,6 @@ func (client AwsClient) putUploadNotificationConfiguration(config *s3.Notificati
 		return
 	}
 	result = true
-	return
-}
-
-func (client AwsClient) getAccountId() (accountId string, err error) {
-
-	session, err := client.connect()
-	if err != nil {
-		return
-	}
-
-	svc := iam.New(session)
-
-	params := &iam.GetUserInput{}
-	resp, err := svc.GetUser(params)
-
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-
-	userArn := *resp.User.Arn
-	// ARNs look like arn:aws:iam::ACCOUNTID:user/USERID
-	// Note the double colon after iam, which makes account ID element 4 rather than 3
-	accountId = strings.Split(userArn, ":")[4]
 	return
 }
 
