@@ -301,7 +301,7 @@ func (client AwsClient) CreateClientUser() (credentials IaaSCredentials, err err
 		return
 	}
 	credentials, err = client.createClientAccessKey()
-	log.Println("Created client user account for " + client.ClientId + " with credentials " + credentials.String())
+	log.Println("Created client user account for " + client.ClientId)
 	return
 }
 
