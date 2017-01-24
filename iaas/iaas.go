@@ -433,13 +433,13 @@ func (client AwsClient) AccountDetails() (details IaaSAccountDetails, err error)
 	}
 	if pathParts[1] == "integrator" {
 		details["IntegratorId"] = pathParts[2]
-		details["ConnectionType"] = "integrator"
+		details["CredentialType"] = "integrator"
 	} else {
 		details["IntegratorId"] = pathParts[1]
 		details["ClientId"] = pathParts[2]
-		details["ConnectionType"] = "client"
+		details["CredentialType"] = "client"
 	}
-
+	err = client.syncVariables(details)
 	return
 }
 
@@ -449,15 +449,22 @@ func (client *AwsClient) populate() error {
 		if err != nil {
 			return err
 		}
-		client.AccountId = details["AccountId"]
-		client.IntegratorId = details["IntegratorId"]
-		mapValue, ok := details["ClientId"]
-		if ok {
-			if client.ClientId != "" && client.ClientId != mapValue {
-				return errors.New("Client ID mismatch: Given client ID " + client.ClientId + " does not match ID for IaaS credentials: " + mapValue)
-			}
-			client.ClientId = mapValue
+		return client.syncVariables(details)
+	}
+	return nil
+}
+
+func (client *AwsClient) syncVariables(details IaaSAccountDetails) error {
+	client.AccountId = details["AccountId"]
+	client.IntegratorId = details["IntegratorId"]
+	mapValue, ok := details["ClientId"]
+	if ok {
+		if client.ClientId != "" && client.ClientId != mapValue {
+			return errors.New("Client ID mismatch: Given client ID " + client.ClientId + " does not match ID for IaaS credentials: " + mapValue)
 		}
+		client.ClientId = mapValue
+	} else if client.ClientId != "" {
+		details["ClientId"] = client.ClientId
 	}
 	return nil
 }

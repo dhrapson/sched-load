@@ -113,6 +113,7 @@ var _ = Describe("The IaaS Client", func() {
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(details["AccountId"]).Should(Equal(accountId))
 					Ω(details["IntegratorId"]).Should(Equal(integratorName))
+					Ω(details["CredentialType"]).Should(Equal("integrator"))
 				})
 			})
 
