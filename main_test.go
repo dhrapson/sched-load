@@ -188,6 +188,9 @@ var _ = Describe("SchedLoad", func() {
 
 			It("exits nicely", func() {
 				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Client ID: " + clientName))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Integrator ID: " + integratorName))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Account ID: " + accountId))
 			})
 		})
 

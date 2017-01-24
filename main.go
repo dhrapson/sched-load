@@ -46,14 +46,21 @@ func main() {
 			Usage:   "show status of connection and schedule",
 			Action: func(c *cli.Context) error {
 
-				iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
-				controller := controller.Controller{Client: iaasClient}
-
-				if status, err := controller.Status(); err != nil {
+				iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
+				ctrler := controller.Controller{Client: iaasClient}
+				details, err := ctrler.Status()
+				if err != nil {
 					log.Fatalf("Error connecting: %s\n", err.Error())
-				} else {
-					log.Println(status)
 				}
+				log.Println("connected to IaaS")
+				if details["ClientId"] == "" {
+					log.Println("Connected as Integrator without a valid client")
+				} else {
+					log.Println("Client ID: " + details["ClientId"])
+				}
+				log.Println("Integrator ID: " + details["IntegratorId"])
+				log.Println("Account ID: " + details["AccountId"])
+
 				return nil
 			},
 		},
