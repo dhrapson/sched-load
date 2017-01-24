@@ -459,9 +459,6 @@ func (client *AwsClient) populate() error {
 			client.ClientId = mapValue
 		}
 	}
-	if client.ClientId == "" {
-		return errors.New("Client ID not set. When connecting with integrator credentials, you must provide the client ID.")
-	}
 	return nil
 }
 

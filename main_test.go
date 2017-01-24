@@ -190,7 +190,7 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with status argument", func() {
 			BeforeEach(func() {
-				args = []string{"--region", region, "--client", clientName, "status"}
+				args = []string{"--region", region, "status"}
 			})
 
 			It("exits nicely", func() {
