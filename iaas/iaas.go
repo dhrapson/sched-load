@@ -39,6 +39,7 @@ type AwsClient struct {
 	session      *session.Session
 	IntegratorId string
 	ClientId     string
+	AccountId    string
 }
 
 type AwsCredentials struct {
@@ -58,6 +59,11 @@ func (creds AwsCredentials) Map() map[string]string {
 }
 
 func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err error) {
+
+	if err = client.populate(); err != nil {
+		return
+	}
+
 	fullConfig, err := client.getUploadNotificationConfiguration()
 	if err != nil {
 		return
@@ -91,6 +97,10 @@ func (client AwsClient) RemoveFileUploadNotification() (wasPreExisting bool, err
 
 func (client AwsClient) FileUploadNotification() (isSet bool, err error) {
 
+	if err = client.populate(); err != nil {
+		return
+	}
+
 	fullConfig, err := client.getUploadNotificationConfiguration()
 	if err != nil {
 		return
@@ -113,6 +123,10 @@ func (client AwsClient) FileUploadNotification() (isSet bool, err error) {
 
 func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, err error) {
 
+	if err = client.populate(); err != nil {
+		return
+	}
+
 	fullConfig, err := client.getUploadNotificationConfiguration()
 	if err != nil {
 		return
@@ -126,14 +140,12 @@ func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, e
 		}
 	}
 	wasNewConfiguration = true
-	accountDetails, err := client.AccountDetails()
-	accountID := accountDetails["AccountId"]
 
 	thisConfig := &s3.TopicConfiguration{
 		Events: []*string{
 			aws.String("s3:ObjectCreated:*"),
 		},
-		TopicArn: aws.String("arn:aws:sns:" + client.Region + ":" + accountID + ":S3NotifierTopic"),
+		TopicArn: aws.String("arn:aws:sns:" + client.Region + ":" + client.AccountId + ":S3NotifierTopic"),
 		Filter: &s3.NotificationConfigurationFilter{
 			Key: &s3.KeyFilter{
 				FilterRules: []*s3.FilterRule{
@@ -156,6 +168,10 @@ func (client AwsClient) AddFileUploadNotification() (wasNewConfiguration bool, e
 
 func (client AwsClient) ListFiles() (names []string, err error) {
 	names = []string{}
+
+	if err = client.populate(); err != nil {
+		return
+	}
 
 	session, err := client.connect()
 	if err != nil {
@@ -184,6 +200,10 @@ func (client AwsClient) ListFiles() (names []string, err error) {
 }
 
 func (client AwsClient) DeleteFile(remotePath string) (wasPreExisting bool, err error) {
+
+	if err = client.populate(); err != nil {
+		return
+	}
 
 	files, err := client.ListFiles()
 	if err != nil {
@@ -221,6 +241,10 @@ func (client AwsClient) DeleteFile(remotePath string) (wasPreExisting bool, err 
 
 func (client AwsClient) UploadFile(filepath string, targetName string) (name string, err error) {
 
+	if err = client.populate(); err != nil {
+		return
+	}
+
 	targetFile := client.ClientId + "/" + targetName
 
 	session, err := client.connect()
@@ -257,6 +281,10 @@ func (client AwsClient) UploadFile(filepath string, targetName string) (name str
 }
 
 func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedFilePath string, err error) {
+
+	if err = client.populate(); err != nil {
+		return
+	}
 
 	name := path.Base(remotePath)
 	downloadedFilePath = path.Join(localDir, name)
@@ -297,6 +325,11 @@ func (client AwsClient) GetFile(remotePath string, localDir string) (downloadedF
 }
 
 func (client AwsClient) CreateClientUser() (credentials IaaSCredentials, err error) {
+
+	if err = client.populate(); err != nil {
+		return
+	}
+
 	err = client.createClientUser()
 	if err != nil {
 		return
@@ -311,6 +344,10 @@ func (client AwsClient) CreateClientUser() (credentials IaaSCredentials, err err
 }
 
 func (client AwsClient) DeleteClientUser(force bool) (wasPreExisting bool, err error) {
+
+	if err = client.populate(); err != nil {
+		return
+	}
 
 	wasPreExisting, err = client.clientUserExists()
 	if err != nil {
@@ -396,12 +433,36 @@ func (client AwsClient) AccountDetails() (details IaaSAccountDetails, err error)
 	}
 	if pathParts[1] == "integrator" {
 		details["IntegratorId"] = pathParts[2]
+		details["ConnectionType"] = "integrator"
 	} else {
 		details["IntegratorId"] = pathParts[1]
 		details["ClientId"] = pathParts[2]
+		details["ConnectionType"] = "client"
 	}
 
 	return
+}
+
+func (client *AwsClient) populate() error {
+	if client.IntegratorId == "" || client.AccountId == "" {
+		details, err := client.AccountDetails()
+		if err != nil {
+			return err
+		}
+		client.AccountId = details["AccountId"]
+		client.IntegratorId = details["IntegratorId"]
+		mapValue, ok := details["ClientId"]
+		if ok {
+			if client.ClientId != "" && client.ClientId != mapValue {
+				return errors.New("Client ID mismatch: Given client ID " + client.ClientId + " does not match ID for IaaS credentials: " + mapValue)
+			}
+			client.ClientId = mapValue
+		}
+	}
+	if client.ClientId == "" {
+		return errors.New("Client ID not set. When connecting with integrator credentials, you must provide the client ID.")
+	}
+	return nil
 }
 
 func (client AwsClient) clientUserExists() (exists bool, err error) {

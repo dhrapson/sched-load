@@ -50,7 +50,6 @@ var _ = Describe("The IaaS Client", func() {
 		integratorSecretAccessKey = os.Getenv("TEST_AWS_SECRET_ACCESS_KEY")
 		Ω(integratorAccessKeyId).ShouldNot(BeEmpty(), "You must set TEST_AWS_ACCESS_KEY_ID environment variable")
 		Ω(integratorSecretAccessKey).ShouldNot(BeEmpty(), "You must set TEST_AWS_SECRET_ACCESS_KEY environment variable")
-
 		if os.Getenv("INTEGRATOR") != "" {
 			integratorName = os.Getenv("INTEGRATOR")
 		} else {
@@ -61,7 +60,7 @@ var _ = Describe("The IaaS Client", func() {
 		uniqueId = uuid.NewV4().String()
 		clientName = uuid.NewV4().String()
 
-		client := AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
+		client := AwsClient{Region: region, ClientId: clientName}
 		setIntegratorEnv()
 		clientCreds, err = client.CreateClientUser()
 		waitForAws()
@@ -71,7 +70,7 @@ var _ = Describe("The IaaS Client", func() {
 
 	AfterSuite(func() {
 		setIntegratorEnv()
-		client = AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
+		client = AwsClient{Region: region, ClientId: clientName}
 		_, err = client.DeleteClientUser(true)
 		Ω(err).ShouldNot(HaveOccurred())
 		unsetEnv()
@@ -97,7 +96,7 @@ var _ = Describe("The IaaS Client", func() {
 			})
 
 			JustBeforeEach(func() {
-				client = AwsClient{IntegratorId: integratorName, ClientId: uniqueId, Region: region}
+				client = AwsClient{ClientId: uniqueId, Region: region}
 			})
 
 			Context("when getting account status", func() {
@@ -148,7 +147,7 @@ var _ = Describe("The IaaS Client", func() {
 		Describe("the client-level operations", func() {
 
 			JustBeforeEach(func() {
-				client = AwsClient{IntegratorId: integratorName, ClientId: clientName, Region: region}
+				client = AwsClient{ClientId: clientName, Region: region}
 			})
 
 			Describe("managing files", func() {
