@@ -50,7 +50,7 @@ func main() {
 				}
 				log.Println("connected to IaaS")
 				if details["ClientId"] == "" {
-					log.Println("Connected as Integrator without a valid client")
+					log.Println("Connected as an integrator without a valid client")
 				} else {
 					log.Println("Client ID: " + details["ClientId"])
 				}

@@ -176,7 +176,20 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
+		Context("When run with status argument", func() {
+			BeforeEach(func() {
+				args = []string{"--region", region, "status"}
+			})
+
+			It("exits nicely", func() {
+				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Connected as an integrator without a valid client"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Integrator ID: " + integratorName))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Account ID: " + accountId))
+			})
+		})
 	})
+
 	Describe("invoking client operations", func() {
 
 		BeforeEach(func() {
