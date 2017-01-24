@@ -29,6 +29,7 @@ var (
 	proxyCommand              *exec.Cmd
 	expectedExitCode          int
 	integratorName            string
+	accountId                 string
 	clientName                string
 	uniqueId                  string
 	clientCreds               iaas.IaaSCredentials
@@ -98,6 +99,12 @@ var _ = Describe("SchedLoad", func() {
 			integratorName = os.Getenv("INTEGRATOR")
 		} else {
 			integratorName = "myintegrator"
+		}
+
+		if os.Getenv("ACCOUNT_ID") != "" {
+			accountId = os.Getenv("ACCOUNT_ID")
+		} else {
+			accountId = "609701658665"
 		}
 
 		uniqueId = uuid.NewV4().String()
