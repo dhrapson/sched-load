@@ -20,19 +20,24 @@ var _ = Describe("The controller", func() {
 		controller = Controller{Client: iaasClient}
 	})
 	Describe("the Status operation", func() {
-		var status string
+		var details iaas.IaaSAccountDetails
 
 		JustBeforeEach(func() {
-			status, err = controller.Status()
+			details, err = controller.Status()
 		})
 
 		Context("when the IaaS is connecting", func() {
 			BeforeEach(func() {
-				iaasClient = IaaSClientMock{FilesList: []string{""}}
+				iaasClient = IaaSClientMock{
+					AccountDetail: iaas.IaaSAccountDetails{"AccountId": "123", "ClientId": "456", "IntegratorId": "789", "ConnectionType": "client"},
+				}
 			})
 			It("gives status connected", func() {
 				Ω(err).ShouldNot(HaveOccurred())
-				Ω(status).Should(Equal("connected"))
+				Ω(details["AccountId"]).Should(Equal("123"))
+				Ω(details["ClientId"]).Should(Equal("456"))
+				Ω(details["IntegratorId"]).Should(Equal("789"))
+				Ω(details["ConnectionType"]).Should(Equal("client"))
 			})
 		})
 
@@ -42,7 +47,7 @@ var _ = Describe("The controller", func() {
 			})
 			It("throws an error and returns the right status", func() {
 				Ω(err).Should(HaveOccurred())
-				Ω(status).Should(Equal("error"))
+				Ω(details).Should(BeNil())
 			})
 		})
 	})

@@ -14,12 +14,16 @@ type Controller struct {
 	Client iaas.IaaSClient
 }
 
-func (controller Controller) Status() (string, error) {
-	_, err := controller.Client.ListFiles()
+func (controller Controller) Status() (details iaas.IaaSAccountDetails, err error) {
+	details, err = controller.Client.AccountDetails()
 	if err != nil {
-		return "error", err
+		return
 	}
-	return "connected", nil
+	_, err = controller.Client.ListFiles()
+	if err != nil {
+		err = errors.New("Unable to connect to upload area: " + err.Error())
+	}
+	return
 }
 
 func (controller Controller) CreateClientUser() (credentials iaas.IaaSCredentials, err error) {
