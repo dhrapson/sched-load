@@ -18,6 +18,7 @@ var (
 	region                    string
 	uniqueId                  string
 	integratorName            string
+	accountId                 string
 	clientName                string
 	clientCreds               IaaSCredentials
 	err                       error
@@ -55,6 +56,13 @@ var _ = Describe("The IaaS Client", func() {
 		} else {
 			integratorName = "myintegrator"
 		}
+
+		if os.Getenv("ACCOUNT_ID") != "" {
+			accountId = os.Getenv("ACCOUNT_ID")
+		} else {
+			accountId = "609701658665"
+		}
+
 		region = "eu-west-1"
 
 		uniqueId = uuid.NewV4().String()
@@ -103,7 +111,7 @@ var _ = Describe("The IaaS Client", func() {
 				It("connects correctly & creates the user", func() {
 					details, err := client.AccountDetails()
 					Ω(err).ShouldNot(HaveOccurred())
-					Ω(details["AccountId"]).Should(Equal("609701658665"))
+					Ω(details["AccountId"]).Should(Equal(accountId))
 					Ω(details["IntegratorId"]).Should(Equal(integratorName))
 				})
 			})
