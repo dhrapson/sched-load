@@ -49,8 +49,9 @@ func main() {
 					log.Fatalf("Error connecting: %s\n", err.Error())
 				}
 				log.Println("connected to IaaS")
+				log.Println("Credential Type: " + details["CredentialType"])
 				if details["ClientId"] == "" {
-					log.Println("Connected as an integrator without a valid client")
+					log.Println("Client ID: none set")
 				} else {
 					log.Println("Client ID: " + details["ClientId"])
 				}
