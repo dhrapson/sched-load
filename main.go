@@ -9,14 +9,15 @@ import (
 	"github.com/urfave/cli"
 )
 
+var (
+	region   string
+	clientId string
+	filePath string
+	force    bool
+)
+
 func main() {
 	app := cli.NewApp()
-
-	var region string
-	var integratorId string
-	var clientId string
-	var filePath string
-	var force bool
 
 	app.Name = "sched-load"
 	app.Usage = "uploads files to public IaaS & publishes a schedule for regular file uploads"
@@ -26,11 +27,6 @@ func main() {
 			Name:        "region, r",
 			Usage:       "public IaaS region for storing the files",
 			Destination: &region,
-		},
-		cli.StringFlag{
-			Name:        "integrator, i",
-			Usage:       "identifier for the integrator",
-			Destination: &integratorId,
 		},
 		cli.StringFlag{
 			Name:        "client, c",
@@ -82,7 +78,7 @@ func main() {
 					},
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						wasPreExisting, err := controller.DeleteClientUser(force)
@@ -110,7 +106,7 @@ func main() {
 					Usage:   "create a client account",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						creds, err := controller.CreateClientUser()
@@ -144,7 +140,7 @@ func main() {
 					},
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						wasPreExisting, err := controller.DeleteDataFile(filePath)
@@ -166,7 +162,7 @@ func main() {
 					Usage:   "list remote unprocessed data files",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						files, err := controller.ListDataFiles()
@@ -200,7 +196,7 @@ func main() {
 					},
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						if fileName, err := controller.UploadDataFile(filePath); err != nil {
@@ -224,7 +220,7 @@ func main() {
 					Usage: "show the immediate data file collection status",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						status, err := controller.ImmediateDataFileCollectionStatus()
@@ -244,7 +240,7 @@ func main() {
 					Usage: "enable immediate data file collection",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						wasNewlySet, err := controller.EnableImmediateDataFileCollection()
@@ -264,7 +260,7 @@ func main() {
 					Usage: "disable immediate data file collection",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						wasPreExisting, err := controller.DisableImmediateDataFileCollection()
@@ -291,7 +287,7 @@ func main() {
 					Usage: "show the schedule status",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						if schedule, err := controller.GetSchedule(); err != nil {
@@ -307,7 +303,7 @@ func main() {
 					Usage: "set a daily schedule",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						wasPreExisting, err := controller.SetSchedule("DAILY")
@@ -327,7 +323,7 @@ func main() {
 					Usage: "remove schedule",
 					Action: func(c *cli.Context) error {
 
-						iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorId, ClientId: clientId}
+						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
 						wasPreExisting, err := controller.RemoveSchedule()

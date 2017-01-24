@@ -103,7 +103,7 @@ var _ = Describe("SchedLoad", func() {
 		uniqueId = uuid.NewV4().String()
 		clientName = uuid.NewV4().String()
 
-		iaasClient := iaas.AwsClient{Region: region, IntegratorId: integratorName, ClientId: clientName}
+		iaasClient := iaas.AwsClient{Region: region, ClientId: clientName}
 		ctrler = controller.Controller{Client: iaasClient}
 		setIntegratorEnv()
 		clientCreds, err = ctrler.CreateClientUser()
@@ -138,7 +138,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing client accounts", func() {
 			Context("When creating", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", uniqueId, "client", "create"}
+					args = []string{"--region", region, "--client", uniqueId, "client", "create"}
 				})
 
 				It("says the right thing and exits nicely", func() {
@@ -149,7 +149,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", uniqueId, "client", "delete"}
+					args = []string{"--region", region, "--client", uniqueId, "client", "delete"}
 				})
 
 				It("says the right thing and exits nicely", func() {
@@ -159,7 +159,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting forcefully", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", uniqueId, "client", "delete", "-f"}
+					args = []string{"--region", region, "--client", uniqueId, "client", "delete", "-f"}
 				})
 
 				It("says the right thing and exits nicely", func() {
@@ -183,7 +183,7 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with status argument", func() {
 			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
+				args = []string{"--region", region, "--client", clientName, "status"}
 			})
 
 			It("exits nicely", func() {
@@ -197,7 +197,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing data files", func() {
 			Context("When uploading", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "df", "upload", "-f", "iaas/fixtures/test-file.csv"}
+					args = []string{"--region", region, "df", "upload", "-f", "iaas/fixtures/test-file.csv"}
 				})
 
 				It("exits nicely", func() {
@@ -207,7 +207,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When listing", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "df", "list-uploaded"}
+					args = []string{"--region", region, "df", "list-uploaded"}
 				})
 
 				It("finds the uploaded file", func() {
@@ -218,7 +218,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting an existing file", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "data-file", "delete", "-r", "test-file.csv"}
+					args = []string{"--region", region, "data-file", "delete", "-r", "test-file.csv"}
 				})
 
 				It("exits nicely", func() {
@@ -228,7 +228,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When listing", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "df", "lu"}
+					args = []string{"--region", region, "df", "lu"}
 				})
 
 				It("finds nothing", func() {
@@ -239,7 +239,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting a non-existant file", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "data-file", "delete", "-r", "test-file.csv"}
+					args = []string{"--region", region, "data-file", "delete", "-r", "test-file.csv"}
 				})
 
 				It("exits nicely", func() {
@@ -252,10 +252,10 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When enabling immediate collection", func() {
 				BeforeEach(func() {
-					setupArgs := []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "disable"}
+					setupArgs := []string{"--region", region, "immediate-collection", "disable"}
 					runCommand(cliPath, 0, setupArgs...)
 					waitForAws()
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "enable"}
+					args = []string{"--region", region, "immediate-collection", "enable"}
 				})
 
 				It("enables immediate collection", func() {
@@ -265,14 +265,14 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When immediate collection is enabled", func() {
 				BeforeEach(func() {
-					enableArgs := []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "enable"}
+					enableArgs := []string{"--region", region, "immediate-collection", "enable"}
 					runCommand(cliPath, 0, enableArgs...)
 					waitForAws()
 				})
 
 				Context("status command", func() {
 					BeforeEach(func() {
-						args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "status"}
+						args = []string{"--region", region, "immediate-collection", "status"}
 					})
 					It("shows status of enabled", func() {
 						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection status is enabled"))
@@ -281,7 +281,7 @@ var _ = Describe("SchedLoad", func() {
 
 				Context("enable command", func() {
 					BeforeEach(func() {
-						args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "enable"}
+						args = []string{"--region", region, "immediate-collection", "enable"}
 					})
 					It("indicates that nothing was done", func() {
 						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already enabled"))
@@ -291,14 +291,14 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When immediate collection is disabled", func() {
 				BeforeEach(func() {
-					enableArgs := []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "disable"}
+					enableArgs := []string{"--region", region, "immediate-collection", "disable"}
 					runCommand(cliPath, 0, enableArgs...)
 					waitForAws()
 				})
 
 				Context("status command", func() {
 					BeforeEach(func() {
-						args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "status"}
+						args = []string{"--region", region, "immediate-collection", "status"}
 					})
 					It("shows status of enabled", func() {
 						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection status is disabled"))
@@ -307,7 +307,7 @@ var _ = Describe("SchedLoad", func() {
 
 				Context("enable command", func() {
 					BeforeEach(func() {
-						args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "disable"}
+						args = []string{"--region", region, "immediate-collection", "disable"}
 					})
 					It("indicates that nothing was done", func() {
 						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already disabled"))
@@ -317,10 +317,10 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When disabling immediate collection", func() {
 				BeforeEach(func() {
-					setupArgs := []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "enable"}
+					setupArgs := []string{"--region", region, "immediate-collection", "enable"}
 					runCommand(cliPath, 0, setupArgs...)
 					waitForAws()
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "immediate-collection", "disable"}
+					args = []string{"--region", region, "immediate-collection", "disable"}
 				})
 
 				It("disables immediate collection", func() {
@@ -332,7 +332,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing schedules", func() {
 			Context("When setting daily", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "schedule", "daily"}
+					args = []string{"--region", region, "schedule", "daily"}
 				})
 
 				It("indicates success", func() {
@@ -342,7 +342,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "schedule", "status"}
+					args = []string{"--region", region, "schedule", "status"}
 				})
 
 				It("exits nicely", func() {
@@ -352,7 +352,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When removing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "schedule", "none"}
+					args = []string{"--region", region, "schedule", "none"}
 				})
 
 				It("indicates success", func() {
@@ -362,7 +362,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing non-existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "schedule", "status"}
+					args = []string{"--region", region, "schedule", "status"}
 				})
 
 				It("exits nicely", func() {
@@ -384,7 +384,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When run with an open proxy server", func() {
 
 			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
+				args = []string{"--region", region, "status"}
 				setClientEnv()
 				// NB. use the openproxy port of 56565
 				os.Setenv("HTTP_PROXY", "localhost:56565")
@@ -405,7 +405,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When run with a blocking proxy server", func() {
 
 			BeforeEach(func() {
-				args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
+				args = []string{"--region", region, "status"}
 				setClientEnv()
 				// NB. use the openproxy port of 56565
 				os.Setenv("HTTP_PROXY", "localhost:56565")
@@ -451,7 +451,7 @@ var _ = Describe("SchedLoad", func() {
 			Context("When run with a missing proxy server", func() {
 
 				BeforeEach(func() {
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
+					args = []string{"--region", region, "status"}
 					setClientEnv()
 					// NB. Attempt to choose a port that is not otherwise in use
 					os.Setenv("HTTP_PROXY", "localhost:45532")
@@ -472,7 +472,7 @@ var _ = Describe("SchedLoad", func() {
 
 				BeforeEach(func() {
 					unsetEnv()
-					args = []string{"--region", region, "--integrator", integratorName, "--client", clientName, "status"}
+					args = []string{"--region", region, "status"}
 				})
 
 				It("indicates a credentials issue", func() {
