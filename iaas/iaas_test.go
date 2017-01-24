@@ -172,7 +172,7 @@ var _ = Describe("The IaaS Client", func() {
 						unsetEnv()
 					})
 
-					It("connects correctly & add the notification", func() {
+					It("connects correctly & adds the notification", func() {
 						_, err = client.RemoveFileUploadNotification()
 						Ω(err).ShouldNot(HaveOccurred())
 
