@@ -16,6 +16,10 @@ import (
 
 type IaaSAccountDetails map[string]string
 
+func (details IaaSAccountDetails) HasClientId() bool {
+	return details["ClientId"] != ""
+}
+
 type IaaSCredentials interface {
 	String() string
 	Map() map[string]string

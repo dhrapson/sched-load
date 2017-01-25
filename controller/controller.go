@@ -19,9 +19,11 @@ func (controller Controller) Status() (details iaas.IaaSAccountDetails, err erro
 	if err != nil {
 		return
 	}
-	_, err = controller.Client.ListFiles()
-	if err != nil {
-		err = errors.New("Unable to connect to upload area: " + err.Error())
+	if details.HasClientId() {
+		_, err = controller.Client.ListFiles()
+		if err != nil {
+			err = errors.New("Unable to connect to upload area: " + err.Error())
+		}
 	}
 	return
 }
