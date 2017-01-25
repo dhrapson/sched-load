@@ -382,7 +382,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When showing existing schedule", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "schedule", "status"}
+					args = []string{"--region", region, "sc", "status"}
 				})
 
 				It("exits nicely", func() {
