@@ -280,7 +280,7 @@ func main() {
 		},
 		{
 			Name:    "schedule",
-			Aliases: []string{"s"},
+			Aliases: []string{"sc"},
 			Usage:   "set a schedule for collection of uploaded data files",
 			Subcommands: []cli.Command{
 				{

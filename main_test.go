@@ -192,13 +192,14 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
-		Context("prints the right stuff & When run with status argument", func() {
+		Context("prints the right stuff & when run with status argument", func() {
 			BeforeEach(func() {
 				args = []string{"--region", region, "--client", clientName, "status"}
 			})
 
 			It("exits nicely", func() {
 				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Credential Type: integrator"))
 				Ω(session.Err).Should(Say(dateFormatRegex + " Client ID: " + clientName))
 				Ω(session.Err).Should(Say(dateFormatRegex + " Integrator ID: " + integratorName))
 				Ω(session.Err).Should(Say(dateFormatRegex + " Account ID: " + accountId))
@@ -225,10 +226,12 @@ var _ = Describe("SchedLoad", func() {
 
 			It("exits nicely", func() {
 				Ω(session.Err).Should(Say(dateFormatRegex + " connected"))
+				Ω(session.Err).Should(Say(dateFormatRegex + " Credential Type: client"))
 				Ω(session.Err).Should(Say(dateFormatRegex + " Client ID: " + clientName))
 				Ω(session.Err).Should(Say(dateFormatRegex + " Integrator ID: " + integratorName))
 				Ω(session.Err).Should(Say(dateFormatRegex + " Account ID: " + accountId))
 			})
+
 		})
 
 		Context("When managing data files", func() {
