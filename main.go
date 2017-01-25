@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/dhrapson/sched-load/controller"
 	"github.com/dhrapson/sched-load/iaas"
@@ -42,6 +43,7 @@ func main() {
 			Usage:   "show status of connection and schedule",
 			Action: func(c *cli.Context) error {
 
+				clientId = strings.ToLower(clientId)
 				iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 				ctrler := controller.Controller{Client: iaasClient}
 				details, err := ctrler.Status()
@@ -79,6 +81,7 @@ func main() {
 					},
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -107,6 +110,7 @@ func main() {
 					Usage:   "create a client account",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -141,6 +145,7 @@ func main() {
 					},
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -163,6 +168,7 @@ func main() {
 					Usage:   "list remote unprocessed data files",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -197,6 +203,7 @@ func main() {
 					},
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -221,6 +228,7 @@ func main() {
 					Usage: "show the immediate data file collection status",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -241,6 +249,7 @@ func main() {
 					Usage: "enable immediate data file collection",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -261,6 +270,7 @@ func main() {
 					Usage: "disable immediate data file collection",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -288,6 +298,7 @@ func main() {
 					Usage: "show the schedule status",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -304,6 +315,7 @@ func main() {
 					Usage: "set a daily schedule",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 
@@ -324,6 +336,7 @@ func main() {
 					Usage: "remove schedule",
 					Action: func(c *cli.Context) error {
 
+						clientId = strings.ToLower(clientId)
 						iaasClient := iaas.AwsClient{Region: region, ClientId: clientId}
 						controller := controller.Controller{Client: iaasClient}
 

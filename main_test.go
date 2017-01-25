@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/dhrapson/sched-load/controller"
@@ -32,6 +33,7 @@ var (
 	accountId                 string
 	clientName                string
 	uniqueId                  string
+	uniqueIdUpper             string
 	clientCreds               iaas.IaaSCredentials
 	ctrler                    controller.Controller
 )
@@ -110,6 +112,7 @@ var _ = Describe("SchedLoad", func() {
 		}
 
 		uniqueId = uuid.NewV4().String()
+		uniqueIdUpper = strings.ToUpper(uniqueId)
 		clientName = uuid.NewV4().String()
 
 		iaasClient := iaas.AwsClient{Region: region, ClientId: clientName}
@@ -153,7 +156,7 @@ var _ = Describe("SchedLoad", func() {
 		Context("When managing client accounts", func() {
 			Context("When creating", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--client", uniqueId, "client", "create"}
+					args = []string{"--region", region, "--client", uniqueIdUpper, "client", "create"}
 				})
 
 				It("says the right thing and exits nicely", func() {
@@ -164,7 +167,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--client", uniqueId, "client", "delete"}
+					args = []string{"--region", region, "--client", uniqueIdUpper, "client", "delete"}
 				})
 
 				It("says the right thing and exits nicely", func() {
@@ -174,7 +177,7 @@ var _ = Describe("SchedLoad", func() {
 
 			Context("When deleting forcefully", func() {
 				BeforeEach(func() {
-					args = []string{"--region", region, "--client", uniqueId, "client", "delete", "-f"}
+					args = []string{"--region", region, "--client", uniqueIdUpper, "client", "delete", "-f"}
 				})
 
 				It("says the right thing and exits nicely", func() {
