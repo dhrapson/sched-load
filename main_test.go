@@ -178,7 +178,7 @@ var _ = Describe("SchedLoad", func() {
 
 		Context("When run with status argument", func() {
 			BeforeEach(func() {
-				args = []string{"--region", region, "status"}
+				args = []string{"--region", region, "st"}
 			})
 
 			It("prints the right stuff & exits nicely", func() {

@@ -38,7 +38,7 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:    "status",
-			Aliases: []string{"s"},
+			Aliases: []string{"st"},
 			Usage:   "show status of connection and schedule",
 			Action: func(c *cli.Context) error {
 
