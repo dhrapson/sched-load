@@ -347,6 +347,48 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
+		Context("When managing schedules", func() {
+			Context("When setting daily", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "schedule", "daily"}
+				})
+
+				It("indicates success", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Set daily schedule"))
+				})
+			})
+
+			Context("When showing existing schedule", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "sc", "status"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " existing schedule: DAILY"))
+				})
+			})
+
+			Context("When removing schedule", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "schedule", "none"}
+				})
+
+				It("indicates success", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Removed schedule"))
+				})
+			})
+
+			Context("When showing non-existing schedule", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "schedule", "status"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " existing schedule: NONE"))
+				})
+			})
+		})
+
 	})
 
 	Describe("invoking client operations", func() {
