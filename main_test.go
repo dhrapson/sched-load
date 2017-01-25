@@ -51,7 +51,8 @@ func unsetEnv() {
 	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
 }
 
-func runProxyServer(path string) *exec.Cmd {
+func runProxyServer(port string, path string) *exec.Cmd {
+	os.Setenv("HTTP_PROXY", "localhost:"+port)
 	command := exec.Command(path, args...)
 	session, err = Start(command, GinkgoWriter, GinkgoWriter)
 	Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+path)
@@ -61,6 +62,7 @@ func runProxyServer(path string) *exec.Cmd {
 func killProxyServer(cmd *exec.Cmd) {
 	e := cmd.Process.Kill()
 	Ω(e).ShouldNot(HaveOccurred(), "Error killing process: "+cmd.Path)
+	os.Unsetenv("HTTP_PROXY")
 }
 
 func runCommand(path string, exitCode int, argsList ...string) (*Session, error) {
@@ -422,8 +424,7 @@ var _ = Describe("SchedLoad", func() {
 				args = []string{"--region", region, "status"}
 				setClientEnv()
 				// NB. use the openproxy port of 56565
-				os.Setenv("HTTP_PROXY", "localhost:56565")
-				proxyCommand = runProxyServer(openProxyPath)
+				proxyCommand = runProxyServer("56565", openProxyPath)
 			})
 
 			AfterEach(func() {
@@ -443,8 +444,7 @@ var _ = Describe("SchedLoad", func() {
 				args = []string{"--region", region, "status"}
 				setClientEnv()
 				// NB. use the openproxy port of 56565
-				os.Setenv("HTTP_PROXY", "localhost:56565")
-				proxyCommand = runProxyServer(blockingProxyPath)
+				proxyCommand = runProxyServer("56565", blockingProxyPath)
 				expectedExitCode = 1
 			})
 
