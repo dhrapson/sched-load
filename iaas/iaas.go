@@ -453,7 +453,13 @@ func (client *AwsClient) populate() error {
 		if err != nil {
 			return err
 		}
-		return client.syncVariables(details)
+		client.syncVariables(details)
+		if err != nil {
+			return err
+		}
+	}
+	if client.ClientId == "" {
+		return errors.New("You must specify a client for this operation")
 	}
 	return nil
 }

@@ -129,6 +129,12 @@ var _ = Describe("SchedLoad", func() {
 		unsetEnv()
 	})
 
+	AssertClientOnlyCommandBehaviour := func() {
+		It("exits with error", func() {
+			Ω(session.Err).Should(Say(dateFormatRegex + " Error: You must specify a client for this operation"))
+		})
+	}
+
 	JustBeforeEach(func() {
 		log.Println("running", cliPath, args, "expecting", expectedExitCode)
 		session, err = runCommand(cliPath, expectedExitCode, args...)
@@ -601,57 +607,121 @@ var _ = Describe("SchedLoad", func() {
 	Describe("invoking incorrectly", func() {
 
 		Context("When run using commands", func() {
+			BeforeEach(func() {
+				expectedExitCode = 1
+			})
+			Context("as the integrator", func() {
+				Context("When running without the client arg", func() {
+					BeforeEach(func() {
+						setIntegratorEnv()
+					})
 
-			JustBeforeEach(func() {
-				command := exec.Command(cliPath, args...)
-				session, err = Start(command, GinkgoWriter, GinkgoWriter)
-				Ω(err).ShouldNot(HaveOccurred(), "Error running CLI: "+cliPath)
-				Eventually(session).Should(Exit(1), cliPath+" exited with unexpected error code")
+					AfterEach(func() {
+						unsetEnv()
+					})
+
+					Context("the immediate collection status command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "ic", "status"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the immediate collection enable command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "ic", "enable"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the immediate collection disable command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "ic", "disable"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the data file delete command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "df", "d"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the data file list-uploaded command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "df", "lu"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the data file upload command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "df", "u"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the schedule status command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "sc", "status"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the schedule daily command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "sc", "daily"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+					Context("the schedule none command ", func() {
+						BeforeEach(func() {
+							args = []string{"--region", region, "sc", "none"}
+						})
+						AssertClientOnlyCommandBehaviour()
+					})
+				})
 
 			})
+			Context("as the client", func() {
 
-			Context("When run with an invalid command", func() {
+				Context("When run with an invalid command", func() {
 
-				BeforeEach(func() {
-					args = []string{"foo"}
+					BeforeEach(func() {
+						args = []string{"foo"}
+					})
+
+					It("indicates that the command was invalid", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Invalid"))
+					})
 				})
 
-				It("indicates that the command was invalid", func() {
-					Ω(session.Err).Should(Say(dateFormatRegex + " Invalid"))
-				})
-			})
+				Context("When run with a missing proxy server", func() {
 
-			Context("When run with a missing proxy server", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "status"}
+						setClientEnv()
+						// NB. Attempt to choose a port that is not otherwise in use
+						os.Setenv("HTTP_PROXY", "localhost:45532")
+					})
 
-				BeforeEach(func() {
-					args = []string{"--region", region, "status"}
-					setClientEnv()
-					// NB. Attempt to choose a port that is not otherwise in use
-					os.Setenv("HTTP_PROXY", "localhost:45532")
-				})
+					AfterEach(func() {
+						unsetEnv()
+						os.Unsetenv("HTTP_PROXY")
+					})
 
-				AfterEach(func() {
-					unsetEnv()
-					os.Unsetenv("HTTP_PROXY")
-				})
+					It("throws an error", func() {
+						Ω(session.Err).Should(Say("error connecting to proxy"))
+					})
 
-				It("throws an error", func() {
-					Ω(session.Err).Should(Say("error connecting to proxy"))
 				})
 
-			})
+				Context("When run without AWS creds", func() {
 
-			Context("When run without AWS creds", func() {
+					BeforeEach(func() {
+						unsetEnv()
+						args = []string{"--region", region, "status"}
+					})
 
-				BeforeEach(func() {
-					unsetEnv()
-					args = []string{"--region", region, "status"}
+					It("indicates a credentials issue", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Credentials not set"))
+					})
+
 				})
-
-				It("indicates a credentials issue", func() {
-					Ω(session.Err).Should(Say(dateFormatRegex + " Credentials not set"))
-				})
-
 			})
 		})
 
