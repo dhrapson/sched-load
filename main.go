@@ -46,7 +46,7 @@ func main() {
 				ctrler := controller.Controller{Client: iaasClient}
 				details, err := ctrler.Status()
 				if err != nil {
-					log.Fatalf("Error connecting: %s\n", err.Error())
+					log.Fatalf("Error: %s\n", err.Error())
 				}
 				log.Println("connected to IaaS")
 				log.Println("Credential Type: " + details["CredentialType"])
@@ -84,7 +84,7 @@ func main() {
 
 						wasPreExisting, err := controller.DeleteClientUser(force)
 						if err != nil {
-							log.Fatalf("Error deleting client account, %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if wasPreExisting {
 							if force {
@@ -112,7 +112,7 @@ func main() {
 
 						creds, err := controller.CreateClientUser()
 						if err != nil {
-							log.Fatalf("Error creating client user %s, %s\n", clientId, err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 
 						log.Printf("created account %s\n", clientId)
@@ -146,7 +146,7 @@ func main() {
 
 						wasPreExisting, err := controller.DeleteDataFile(filePath)
 						if err != nil {
-							log.Fatalf("Error delete file %s, %s\n", filePath, err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if wasPreExisting {
 							log.Printf("deleted %s\n", filePath)
@@ -168,7 +168,7 @@ func main() {
 
 						files, err := controller.ListDataFiles()
 						if err != nil {
-							log.Fatalf("Error listing data files, %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 
 						var filesList string
@@ -201,7 +201,7 @@ func main() {
 						controller := controller.Controller{Client: iaasClient}
 
 						if fileName, err := controller.UploadDataFile(filePath); err != nil {
-							log.Fatalf("Error uploading file %s, %s\n", fileName, err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						} else {
 							log.Printf("uploaded %s\n", fileName)
 						}
@@ -226,7 +226,7 @@ func main() {
 
 						status, err := controller.ImmediateDataFileCollectionStatus()
 						if err != nil {
-							log.Fatalf("Error connecting: %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if status {
 							log.Println("Immediate collection status is enabled")
@@ -246,7 +246,7 @@ func main() {
 
 						wasNewlySet, err := controller.EnableImmediateDataFileCollection()
 						if err != nil {
-							log.Fatalf("Error connecting: %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if wasNewlySet {
 							log.Println("Enabled immediate collection")
@@ -266,7 +266,7 @@ func main() {
 
 						wasPreExisting, err := controller.DisableImmediateDataFileCollection()
 						if err != nil {
-							log.Fatalf("Error connecting: %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if wasPreExisting {
 							log.Println("Disabled immediate collection")
@@ -292,7 +292,7 @@ func main() {
 						controller := controller.Controller{Client: iaasClient}
 
 						if schedule, err := controller.GetSchedule(); err != nil {
-							log.Fatalf("Error connecting: %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						} else {
 							log.Println("existing schedule: " + schedule)
 						}
@@ -309,7 +309,7 @@ func main() {
 
 						wasPreExisting, err := controller.SetSchedule("DAILY")
 						if err != nil {
-							log.Fatalf("Error connecting: %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if wasPreExisting {
 							log.Println("Set daily schedule")
@@ -329,7 +329,7 @@ func main() {
 
 						wasPreExisting, err := controller.RemoveSchedule()
 						if err != nil {
-							log.Fatalf("Error connecting: %s\n", err.Error())
+							log.Fatalf("Error: %s\n", err.Error())
 						}
 						if wasPreExisting {
 							log.Println("Removed schedule")
