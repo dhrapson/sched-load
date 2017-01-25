@@ -206,6 +206,141 @@ var _ = Describe("SchedLoad", func() {
 			})
 		})
 
+		Context("When managing data files", func() {
+			Context("When uploading", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "df", "upload", "-f", "iaas/fixtures/test-file.csv"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " uploaded INPUT/test-file.csv"))
+				})
+			})
+
+			Context("When listing", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "df", "list-uploaded"}
+				})
+
+				It("finds the uploaded file", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + ` listing files:
+	INPUT/test-file.csv`))
+				})
+			})
+
+			Context("When deleting an existing file", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "data-file", "delete", "-r", "test-file.csv"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " deleted test-file.csv"))
+				})
+			})
+
+			Context("When listing", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "df", "lu"}
+				})
+
+				It("finds nothing", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + ` listing files:
+	none found`))
+				})
+			})
+
+			Context("When deleting a non-existant file", func() {
+				BeforeEach(func() {
+					args = []string{"--region", region, "--client", clientName, "data-file", "delete", "-r", "test-file.csv"}
+				})
+
+				It("exits nicely", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " test-file.csv did not exist"))
+				})
+			})
+		})
+
+		Context("When managing immediate file collection", func() {
+
+			Context("When enabling immediate collection", func() {
+				BeforeEach(func() {
+					setupArgs := []string{"--region", region, "--client", clientName, "immediate-collection", "disable"}
+					runCommand(cliPath, 0, setupArgs...)
+					waitForAws()
+					args = []string{"--region", region, "--client", clientName, "immediate-collection", "enable"}
+				})
+
+				It("enables immediate collection", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Enabled immediate collection"))
+				})
+			})
+
+			Context("When immediate collection is enabled", func() {
+				BeforeEach(func() {
+					enableArgs := []string{"--region", region, "--client", clientName, "immediate-collection", "enable"}
+					runCommand(cliPath, 0, enableArgs...)
+					waitForAws()
+				})
+
+				Context("status command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--client", clientName, "immediate-collection", "status"}
+					})
+					It("shows status of enabled", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection status is enabled"))
+					})
+				})
+
+				Context("enable command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--client", clientName, "immediate-collection", "enable"}
+					})
+					It("indicates that nothing was done", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already enabled"))
+					})
+				})
+			})
+
+			Context("When immediate collection is disabled", func() {
+				BeforeEach(func() {
+					enableArgs := []string{"--region", region, "--client", clientName, "immediate-collection", "disable"}
+					runCommand(cliPath, 0, enableArgs...)
+					waitForAws()
+				})
+
+				Context("status command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--client", clientName, "immediate-collection", "status"}
+					})
+					It("shows status of enabled", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection status is disabled"))
+					})
+				})
+
+				Context("enable command", func() {
+					BeforeEach(func() {
+						args = []string{"--region", region, "--client", clientName, "immediate-collection", "disable"}
+					})
+					It("indicates that nothing was done", func() {
+						Ω(session.Err).Should(Say(dateFormatRegex + " Immediate collection was already disabled"))
+					})
+				})
+			})
+
+			Context("When disabling immediate collection", func() {
+				BeforeEach(func() {
+					setupArgs := []string{"--region", region, "--client", clientName, "immediate-collection", "enable"}
+					runCommand(cliPath, 0, setupArgs...)
+					waitForAws()
+					args = []string{"--region", region, "--client", clientName, "immediate-collection", "disable"}
+				})
+
+				It("disables immediate collection", func() {
+					Ω(session.Err).Should(Say(dateFormatRegex + " Disabled immediate collection"))
+				})
+			})
+		})
+
 	})
 
 	Describe("invoking client operations", func() {
