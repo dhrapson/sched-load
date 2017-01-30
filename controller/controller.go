@@ -35,6 +35,17 @@ func (controller Controller) CreateClientUser() (credentials iaas.IaaSCredential
 
 func (controller Controller) DeleteClientUser(force bool) (wasPreExisting bool, err error) {
 	wasPreExisting, err = controller.Client.DeleteClientUser(force)
+	if err != nil {
+		return
+	}
+	_, err = controller.RemoveSchedule()
+	if err != nil {
+		return
+	}
+	_, err = controller.DisableImmediateDataFileCollection()
+	if err != nil {
+		return
+	}
 	return
 }
 func (controller Controller) ListDataFiles() (result []string, err error) {
